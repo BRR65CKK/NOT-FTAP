@@ -182,7 +182,7 @@
                 <div class="w-10 h-10 bg-yellow-900/40 text-yellow-400 rounded-lg flex items-center justify-center font-bold"><i class="fa-solid fa-user-ninja"></i></div>
                 <div>
                     <div class="text-sm font-semibold text-white">Roblox Dummy</div>
-                    <div class="text-xs text-slate-400">Player-sized 1.8m Ragdoll</div>
+                    <div class="text-xs text-slate-400">Connected Joint Ragdoll</div>
                 </div>
             </button>
 
@@ -272,9 +272,7 @@
         let isGrabbing = false;
         let isStaticGrab = false;
         let grabDistance = 4.0;
-        let grabLocalOffset = new CANNON.Vec3();
         const minGrabDistance = 2.0, maxGrabDistance = 35.0;
-        let grabOrientationOffset = new THREE.Quaternion();
         let isRotatingItem = false;
         let isSpawnerOpen = false;
         let activeAnchors = new Map();
@@ -282,9 +280,7 @@
         // Safe Pointer Lock Helper
         function requestPointerLockSafe() {
             if (!document.pointerLockElement && container) {
-                container.requestPointerLock().catch(err => {
-                    // Prevent unhandled rejection errors
-                });
+                container.requestPointerLock().catch(err => {});
             }
         }
 
@@ -301,7 +297,6 @@
             container = document.getElementById('canvas-container');
             scene = new THREE.Scene();
 
-            // Sunny skybox background & daylight fog
             scene.background = new THREE.Color(0x38bdf8);
             scene.fog = new THREE.FogExp2(0x38bdf8, 0.008);
 
@@ -315,7 +310,6 @@
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             container.appendChild(renderer.domElement);
 
-            // Lighting setup
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
@@ -336,7 +330,7 @@
 
         function initCannon() {
             world = new CANNON.World();
-            world.gravity.set(0, -35.0, 0); // Fast responsive fall speed
+            world.gravity.set(0, -35.0, 0);
             world.broadphase = new CANNON.NaiveBroadphase();
             world.solver.iterations = 10;
 
@@ -348,7 +342,6 @@
             );
             world.addContactMaterial(contactMaterial);
 
-            // Create Player Capsule Body
             const radius = 0.5;
             const shape = new CANNON.Sphere(radius);
             playerBody = new CANNON.Body({
@@ -365,14 +358,12 @@
         }
 
         function createEnvironment() {
-            // Ground Physics Body
             const groundShape = new CANNON.Plane();
             const groundBody = new CANNON.Body({ mass: 0, material: defaultMaterial });
             groundBody.addShape(groundShape);
             groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
             world.addBody(groundBody);
 
-            // Ground Visual Mesh
             const groundGeo = new THREE.PlaneGeometry(300, 300);
             const groundMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.8 });
             const groundMesh = new THREE.Mesh(groundGeo, groundMat);
@@ -382,7 +373,6 @@
             scene.add(groundMesh);
             staticMeshes.push(groundMesh);
 
-            // Horizon Backdrop Mountains
             const mountainGeo = new THREE.ConeGeometry(40, 60, 5);
             const mountainMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.9 });
             for (let i = 0; i < 8; i++) {
@@ -395,7 +385,6 @@
                 staticMeshes.push(m);
             }
 
-            // Pine Trees Environment Objects
             for (let i = 0; i < 15; i++) {
                 const treeGroup = new THREE.Group();
                 const trunkGeo = new THREE.CylinderGeometry(0.4, 0.6, 3, 8);
@@ -422,14 +411,12 @@
                 }
             }
 
-            // ONLY 3 DUMMIES ON START
             spawnObject('dummy', new THREE.Vector3(-3, 2.5, -5));
             spawnObject('dummy', new THREE.Vector3(0, 2.5, -5));
             spawnObject('dummy', new THREE.Vector3(3, 2.5, -5));
         }
 
         function createTendrilLine() {
-            // Create a curved 3D tube mesh for the worm tendril
             const points = [
                 new THREE.Vector3(0, 0, 0),
                 new THREE.Vector3(0, 0, -1),
@@ -441,12 +428,20 @@
                 color: 0x38bdf8,
                 emissive: 0x0284c7,
                 emissiveIntensity: 0.8,
-                roughness: 0.2,
-                wireframe: false
+                roughness: 0.2
             });
             tendrilMesh = new THREE.Mesh(tubeGeo, tubeMat);
             tendrilMesh.visible = false;
             scene.add(tendrilMesh);
+        }
+
+        function updateWormTendril(startPoint, endPoint) {
+            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+            midPoint.y += 0.5;
+
+            const curve = new THREE.CatmullRomCurve3([startPoint, midPoint, endPoint]);
+            tendrilMesh.geometry.dispose();
+            tendrilMesh.geometry = new THREE.TubeGeometry(curve, 20, 0.06, 8, false);
         }
 
         function setupEventListeners() {
@@ -497,7 +492,12 @@
                 } else if (e.button === 2) {
                     if (isGrabbing && grabbedBody) {
                         const flingForce = camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(40);
-                        grabbedBody.velocity.set(flingForce.x, flingForce.y, flingForce.z);
+                        
+                        const parts = (grabbedBody.userData && grabbedBody.userData.allParts) ? grabbedBody.userData.allParts : [grabbedBody];
+                        parts.forEach(p => {
+                            p.velocity.set(flingForce.x, flingForce.y, flingForce.z);
+                        });
+
                         soundFX.playFling();
                         releaseGrab();
                     }
@@ -600,73 +600,45 @@
 
         function anchorItem(body) {
             if (!body) return;
-            
-            const searchRadius = 3.5;
-            let targetBodyToLock = null;
-
-            for (let i = 0; i < physicsBodies.length; i++) {
-                const other = physicsBodies[i];
-                if (other !== body && other.position.distanceTo(body.position) < searchRadius) {
-                    targetBodyToLock = other;
-                    break;
-                }
-            }
-
-            if (targetBodyToLock) {
-                const constraint = new CANNON.LockConstraint(body, targetBodyToLock);
-                world.addConstraint(constraint);
-                
-                if (!body.userData.constraints) body.userData.constraints = [];
-                if (!targetBodyToLock.userData.constraints) targetBodyToLock.userData.constraints = [];
-                
-                body.userData.constraints.push(constraint);
-                targetBodyToLock.userData.constraints.push(constraint);
-            } else {
-                body.mass = 0;
-                body.type = CANNON.Body.STATIC;
-                body.velocity.set(0, 0, 0);
-                body.angularVelocity.set(0, 0, 0);
-                body.updateMassProperties();
-            }
-
-            activeAnchors.set(body, true);
+            const parts = (body.userData && body.userData.allParts) ? body.userData.allParts : [body];
+            parts.forEach(b => {
+                b.mass = 0;
+                b.type = CANNON.Body.STATIC;
+                b.velocity.set(0, 0, 0);
+                b.angularVelocity.set(0, 0, 0);
+                b.updateMassProperties();
+                activeAnchors.set(b, true);
+            });
             if (grabbedBody === body) releaseGrab();
         }
 
         function unanchorItem(body) {
             if (!body) return;
-
-            if (body.userData && body.userData.constraints) {
-                body.userData.constraints.forEach(c => {
-                    world.removeConstraint(c);
-                });
-                body.userData.constraints = [];
-            }
-
-            body.mass = body.userData.density || 20;
-            body.type = CANNON.Body.DYNAMIC;
-            body.updateMassProperties();
-            body.wakeUp();
-            activeAnchors.delete(body);
+            const parts = (body.userData && body.userData.allParts) ? body.userData.allParts : [body];
+            parts.forEach(b => {
+                b.mass = b.userData.density || 20;
+                b.type = CANNON.Body.DYNAMIC;
+                b.updateMassProperties();
+                b.wakeUp();
+                activeAnchors.delete(b);
+            });
         }
 
         function deleteGrabbedItem() {
             if (grabbedBody) {
-                if (grabbedBody.userData && grabbedBody.userData.constraints) {
-                    grabbedBody.userData.constraints.forEach(c => world.removeConstraint(c));
-                }
-
-                const mesh = grabbedBody.userData ? grabbedBody.userData.mesh : null;
-                if (mesh) {
-                    scene.remove(mesh);
-                    const meshIdx = meshes.indexOf(mesh);
-                    if (meshIdx > -1) meshes.splice(meshIdx, 1);
-                }
-                world.removeBody(grabbedBody);
-                const bodyIdx = physicsBodies.indexOf(grabbedBody);
-                if (bodyIdx > -1) physicsBodies.splice(bodyIdx, 1);
-
-                activeAnchors.delete(grabbedBody);
+                const parts = (grabbedBody.userData && grabbedBody.userData.allParts) ? grabbedBody.userData.allParts : [grabbedBody];
+                parts.forEach(p => {
+                    const mesh = p.userData ? p.userData.mesh : null;
+                    if (mesh) {
+                        scene.remove(mesh);
+                        const meshIdx = meshes.indexOf(mesh);
+                        if (meshIdx > -1) meshes.splice(meshIdx, 1);
+                    }
+                    world.removeBody(p);
+                    const bodyIdx = physicsBodies.indexOf(p);
+                    if (bodyIdx > -1) physicsBodies.splice(bodyIdx, 1);
+                    activeAnchors.delete(p);
+                });
                 releaseGrab();
             }
         }
@@ -696,7 +668,7 @@
 
             const shape = new CANNON.Box(new CANNON.Vec3(size / 2, size / 2, size / 2));
             const body = new CANNON.Body({ mass: 15, material: defaultMaterial });
-            body.userData = {};
+            body.userData = { isSpawnedObject: true };
             body.addShape(shape);
             body.position.copy(pos);
             world.addBody(body);
@@ -712,23 +684,15 @@
         function createPhysicsBall(pos) {
             const radius = 0.8;
             const geo = new THREE.SphereGeometry(radius, 24, 24);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.3, metalness: 0.1 });
+            const mat = new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.3 });
             const mesh = new THREE.Mesh(geo, mat);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
             scene.add(mesh);
 
-            const bouncyMaterial = new CANNON.Material('bouncy');
-            const contactMat = new CANNON.ContactMaterial(
-                defaultMaterial,
-                bouncyMaterial,
-                { friction: 0.3, restitution: 0.8 }
-            );
-            world.addContactMaterial(contactMat);
-
             const shape = new CANNON.Sphere(radius);
-            const body = new CANNON.Body({ mass: 10, material: bouncyMaterial });
-            body.userData = {};
+            const body = new CANNON.Body({ mass: 10, material: defaultMaterial });
+            body.userData = { isSpawnedObject: true };
             body.addShape(shape);
             body.position.copy(pos);
             world.addBody(body);
@@ -753,7 +717,7 @@
 
             const shape = new CANNON.Box(new CANNON.Vec3(2.4, 0.175, 2.4));
             const body = new CANNON.Body({ mass: 30, material: defaultMaterial });
-            body.userData = {};
+            body.userData = { isSpawnedObject: true };
             body.addShape(shape);
             body.position.copy(pos);
             world.addBody(body);
@@ -767,14 +731,13 @@
         }
 
         function createRobloxDummy(pos) {
+            // Full uniform grey material for the classic Roblox dummy look
             const greyMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.5 });
             const ragdollBodies = [];
-            const joints = [];
 
-            // Ground level base at y = 0.0
-            const groundY = 0;
             const spawnX = pos ? pos.x : 0;
             const spawnZ = pos ? pos.z : -5;
+            const spawnY = pos ? pos.y : 2.5;
 
             function createPart(w, h, d, density, localPos, name) {
                 const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), greyMat);
@@ -784,17 +747,9 @@
 
                 const shape = new CANNON.Box(new CANNON.Vec3(w / 2, h / 2, d / 2));
                 const body = new CANNON.Body({ mass: density, material: defaultMaterial });
-                body.userData = {};
+                body.userData = { isSpawnedObject: true };
                 body.addShape(shape);
-                
-                // Position relative to ground base y = 0.0
-                body.position.set(spawnX + localPos.x, groundY + localPos.y, spawnZ + localPos.z);
-                body.linearDamping = 0.5;
-                body.angularDamping = 0.5;
-                
-                body.mass = 0;
-                body.type = CANNON.Body.STATIC;
-                body.updateMassProperties();
+                body.position.set(spawnX + localPos.x, spawnY + localPos.y, spawnZ + localPos.z);
                 
                 world.addBody(body);
 
@@ -802,7 +757,6 @@
                 body.userData.isRagdollPart = true;
                 body.userData.density = density;
                 body.userData.allParts = ragdollBodies;
-                body.userData.hasRagdolled = false;
                 mesh.userData.body = body;
                 mesh.userData.name = name;
 
@@ -812,40 +766,33 @@
                 return body;
             }
 
-            // Sleek & Skinny Proportional Roblox R6 (Total height = 1.50m)
-            // Legs: 0.24m wide x 0.60m high x 0.24m deep (center y = 0.30)
-            const lLeg  = createPart(0.24, 0.60, 0.24, 4, new THREE.Vector3(-0.13, 0.30, 0), "Ragdoll Left Leg");
-            const rLeg  = createPart(0.24, 0.60, 0.24, 4, new THREE.Vector3(0.13, 0.30, 0), "Ragdoll Right Leg");
+            // Create connected body parts with uniform grey appearance
+            const torso = createPart(0.6, 0.8, 0.3, 12, new THREE.Vector3(0, 0.4, 0), "Dummy Torso");
+            const head = createPart(0.4, 0.4, 0.4, 4, new THREE.Vector3(0, 1.0, 0), "Dummy Head");
+            const leftArm = createPart(0.28, 0.7, 0.28, 3, new THREE.Vector3(-0.48, 0.4, 0), "Dummy Left Arm");
+            const rightArm = createPart(0.28, 0.7, 0.28, 3, new THREE.Vector3(0.48, 0.4, 0), "Dummy Right Arm");
+            const leftLeg = createPart(0.28, 0.7, 0.28, 4, new THREE.Vector3(-0.16, -0.35, 0), "Dummy Left Leg");
+            const rightLeg = createPart(0.28, 0.7, 0.28, 4, new THREE.Vector3(0.16, -0.35, 0), "Dummy Right Leg");
 
-            // Torso: 0.50m wide x 0.55m high x 0.25m deep (center y = 0.875)
-            const torso = createPart(0.50, 0.55, 0.25, 10, new THREE.Vector3(0, 0.875, 0), "Ragdoll Torso");
-
-            // Head: 0.30m wide x 0.30m high x 0.30m deep (center y = 1.30 -> top of head at 1.45m~1.50m)
-            const head  = createPart(0.30, 0.30, 0.30, 4, new THREE.Vector3(0, 1.30, 0), "Ragdoll Head");
-
-            // Arms: 0.24m wide x 0.55m high x 0.24m deep attached to torso sides (center y = 0.875)
-            const lArm  = createPart(0.24, 0.55, 0.24, 3, new THREE.Vector3(-0.38, 0.875, 0), "Ragdoll Left Arm");
-            const rArm  = createPart(0.24, 0.55, 0.24, 3, new THREE.Vector3(0.38, 0.875, 0), "Ragdoll Right Arm");
-
+            // Attach Joint Constraints
             function addJoint(bodyA, bodyB, pivotA, pivotB) {
-                const constraint = new CANNON.ConeTwistConstraint(bodyA, bodyB, {
-                    pivotA: pivotA,
-                    pivotB: pivotB,
-                    axisA: new CANNON.Vec3(0, 1, 0),
-                    axisB: new CANNON.Vec3(0, 1, 0),
-                    angle: Math.PI / 4,
-                    twistAngle: Math.PI / 8
-                });
+                const constraint = new CANNON.PointToPointConstraint(
+                    bodyA, pivotA,
+                    bodyB, pivotB
+                );
                 world.addConstraint(constraint);
-                joints.push(constraint);
             }
 
-            // Joint anchors aligned with skinnier proportions
-            addJoint(torso, head, new CANNON.Vec3(0, 0.275, 0), new CANNON.Vec3(0, -0.15, 0));
-            addJoint(torso, lArm, new CANNON.Vec3(-0.25, 0.15, 0), new CANNON.Vec3(0, 0.275, 0));
-            addJoint(torso, rArm, new CANNON.Vec3(0.25, 0.15, 0), new CANNON.Vec3(0, 0.275, 0));
-            addJoint(torso, lLeg, new CANNON.Vec3(-0.13, -0.275, 0), new CANNON.Vec3(0, 0.30, 0));
-            addJoint(torso, rLeg, new CANNON.Vec3(0.13, -0.275, 0), new CANNON.Vec3(0, 0.30, 0));
+            // Head to Torso
+            addJoint(torso, head, new CANNON.Vec3(0, 0.4, 0), new CANNON.Vec3(0, -0.2, 0));
+            // Left Arm to Torso
+            addJoint(torso, leftArm, new CANNON.Vec3(-0.35, 0.35, 0), new CANNON.Vec3(0.14, 0.35, 0));
+            // Right Arm to Torso
+            addJoint(torso, rightArm, new CANNON.Vec3(0.35, 0.35, 0), new CANNON.Vec3(-0.14, 0.35, 0));
+            // Left Leg to Torso
+            addJoint(torso, leftLeg, new CANNON.Vec3(-0.16, -0.4, 0), new CANNON.Vec3(0, 0.35, 0));
+            // Right Leg to Torso
+            addJoint(torso, rightLeg, new CANNON.Vec3(0.16, -0.4, 0), new CANNON.Vec3(0, 0.35, 0));
         }
 
         function activateRagdoll(body) {
@@ -884,22 +831,14 @@
                     isGrabbing = true;
                     isStaticGrab = false;
 
-                    // If grabbed dummy part, switch to dynamic ragdoll
                     activateRagdoll(grabbedBody);
 
-                    // If anchored, make dynamic while holding
                     if (activeAnchors.has(grabbedBody)) {
-                        grabbedBody.mass = grabbedBody.userData.density || 20;
-                        grabbedBody.type = CANNON.Body.DYNAMIC;
-                        grabbedBody.updateMassProperties();
-                        grabbedBody.wakeUp();
+                        unanchorItem(grabbedBody);
                     }
 
                     grabDistance = camera.position.distanceTo(intersects[0].point);
                     grabDistance = Math.max(minGrabDistance, Math.min(maxGrabDistance, grabDistance));
-
-                    // Store offset relative to body center to avoid torque physics chaos
-                    grabLocalOffset.set(0, 0, 0);
 
                     soundFX.playLatch();
                     document.getElementById('crosshair').classList.add('attached');
@@ -909,15 +848,19 @@
                 }
             }
 
-            // Also allow grabbing environment static objects
             const staticIntersects = raycaster.intersectObjects(staticMeshes, true);
             if (staticIntersects.length > 0) {
-                grabbedStaticMesh = staticIntersects[0].object;
+                const hit = staticIntersects[0];
+                grabbedStaticMesh = hit.object;
                 isGrabbing = true;
                 isStaticGrab = true;
-                grabDistance = camera.position.distanceTo(staticIntersects[0].point);
+
+                if (!grabbedStaticMesh.userData) grabbedStaticMesh.userData = {};
+                grabbedStaticMesh.userData.targetPoint = hit.point.clone();
+
+                grabDistance = camera.position.distanceTo(hit.point);
                 document.getElementById('crosshair').classList.add('attached');
-                document.getElementById('target-info').textContent = grabbedStaticMesh.userData.name || "Environment";
+                document.getElementById('target-info').textContent = hit.object.userData.name || "Environment";
                 tendrilMesh.visible = true;
                 soundFX.playLatch();
             }
@@ -936,99 +879,64 @@
             document.getElementById('target-info').textContent = "None";
         }
 
-        function updateWormTendril(startPos, endPos) {
-            const points = [];
-            const segments = 10;
-            const time = Date.now() * 0.008;
-
-            for (let i = 0; i <= segments; i++) {
-                const t = i / segments;
-                const p = new THREE.Vector3().lerpVectors(startPos, endPos, t);
-
-                if (i > 0 && i < segments) {
-                    const wave = Math.sin(time + t * Math.PI * 4) * 0.05 * Math.sin(t * Math.PI);
-                    p.x += wave;
-                    p.y += wave;
-                }
-                points.push(p);
-            }
-
-            const curve = new THREE.CatmullRomCurve3(points);
-            const newGeo = new THREE.TubeGeometry(curve, 12, 0.04, 8, false);
-            if (tendrilMesh.geometry) tendrilMesh.geometry.dispose();
-            tendrilMesh.geometry = newGeo;
-            tendrilMesh.visible = true;
-        }
-
-        function updatePlayerMovement(delta) {
-            if (!isLocked) return;
-
-            let currentSpeed = walkSpeed;
-            if (isSprinting) currentSpeed = sprintSpeed;
-            if (isCrouching) currentSpeed = crouchSpeed;
-
-            const inputDir = new THREE.Vector3();
-            if (moveForward) inputDir.z -= 1;
-            if (moveBackward) inputDir.z += 1;
-            if (moveLeft) inputDir.x -= 1;
-            if (moveRight) inputDir.x += 1;
-
-            inputDir.normalize();
-
-            // Transform input direction by camera horizontal angle
-            const euler = new THREE.Euler(0, cameraRotation.y, 0, 'YXZ');
-            inputDir.applyEuler(euler);
-
-            playerBody.velocity.x = inputDir.x * currentSpeed;
-            playerBody.velocity.z = inputDir.z * currentSpeed;
-
-            // Keep camera anchored to player capsule body
-            const targetCamY = isCrouching ? 0.4 : 0.8;
-            camera.position.x = playerBody.position.x;
-            camera.position.y = playerBody.position.y + targetCamY;
-            camera.position.z = playerBody.position.z;
-        }
-
         function updateGrabbedObject() {
             if (!isGrabbing) return;
 
             const handPos = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(0.8)).sub(new THREE.Vector3(0, 0.2, 0));
-            const targetPos = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(grabDistance));
-
-            // Elevate target position slightly so objects don't clip into the ground plane
-            if (targetPos.y < 1.0) {
-                targetPos.y = 1.0;
-            }
 
             if (isStaticGrab && grabbedStaticMesh) {
-                updateWormTendril(handPos, targetPos);
-                // Smooth pull towards environmental anchors
-                const pullForce = targetPos.clone().sub(handPos).multiplyScalar(8);
+                const envTargetPos = grabbedStaticMesh.userData.targetPoint || camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(grabDistance));
+                updateWormTendril(handPos, envTargetPos);
+
+                const pullForce = envTargetPos.clone().sub(handPos).multiplyScalar(6);
                 playerBody.velocity.x += pullForce.x * 0.02;
                 playerBody.velocity.y += pullForce.y * 0.02;
                 playerBody.velocity.z += pullForce.z * 0.02;
                 return;
             }
 
+            const targetPos = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(grabDistance));
+
+            if (targetPos.y < 1.0) {
+                targetPos.y = 1.0;
+            }
+
             if (grabbedBody) {
                 const currentAttachPoint = new THREE.Vector3(grabbedBody.position.x, grabbedBody.position.y, grabbedBody.position.z);
-
                 updateWormTendril(handPos, currentAttachPoint);
 
-                // Directly calculate velocity vector required to hit target smoothly
                 const vx = (targetPos.x - grabbedBody.position.x) * 12.0;
                 const vy = (targetPos.y - grabbedBody.position.y) * 12.0;
                 const vz = (targetPos.z - grabbedBody.position.z) * 12.0;
 
                 grabbedBody.velocity.set(vx, vy, vz);
 
-                // Dampen rotational forces so item stays facing cleanly
                 if (isRotatingItem) {
                     grabbedBody.angularVelocity.set(0, 4, 0);
                 } else {
                     grabbedBody.angularVelocity.scale(0.8, grabbedBody.angularVelocity);
                 }
             }
+        }
+
+        function updatePlayerMovement(delta) {
+            let speed = walkSpeed;
+            if (isSprinting) speed = sprintSpeed;
+            if (isCrouching) speed = crouchSpeed;
+
+            const inputVector = new THREE.Vector3(0, 0, 0);
+            if (moveForward) inputVector.z -= 1;
+            if (moveBackward) inputVector.z += 1;
+            if (moveLeft) inputVector.x -= 1;
+            if (moveRight) inputVector.x += 1;
+
+            inputVector.normalize();
+
+            const moveDir = inputVector.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y);
+            playerBody.velocity.x = moveDir.x * speed;
+            playerBody.velocity.z = moveDir.z * speed;
+
+            camera.position.set(playerBody.position.x, playerBody.position.y + 0.8, playerBody.position.z);
         }
 
         let clock = new THREE.Clock();
@@ -1038,10 +946,8 @@
 
             const delta = Math.min(clock.getDelta(), 0.1);
 
-            // Step Cannon physics simulation
             world.step(1 / 60, delta, 3);
 
-            // Sync visual meshes with physics body positions & quaternions
             for (let i = 0; i < physicsBodies.length; i++) {
                 const body = physicsBodies[i];
                 if (body.userData && body.userData.mesh) {
