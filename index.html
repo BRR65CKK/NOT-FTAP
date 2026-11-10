@@ -430,15 +430,17 @@
 
         function createTendrilLine() {
             // Create a curved 3D tube mesh for the worm tendril
-            const curve = new THREE.CatmullRomCurve3([
+            const points = [
                 new THREE.Vector3(0, 0, 0),
                 new THREE.Vector3(0, 0, -1),
                 new THREE.Vector3(0, 0, -2)
-            ]);
+            ];
+            const curve = new THREE.CatmullRomCurve3(points);
             const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.08, 8, false);
             const tubeMat = new THREE.MeshStandardMaterial({
                 color: 0x38bdf8,
                 emissive: 0x0284c7,
+                emissiveIntensity: 0.8,
                 roughness: 0.2,
                 wireframe: false
             });
@@ -860,6 +862,7 @@
         }
 
         function attemptGrab() {
+            camera.updateMatrixWorld(true);
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
             raycaster.far = maxGrabDistance;
@@ -895,9 +898,8 @@
                     grabDistance = camera.position.distanceTo(intersects[0].point);
                     grabDistance = Math.max(minGrabDistance, Math.min(maxGrabDistance, grabDistance));
 
-                    const worldPos = new THREE.Vector3().copy(grabbedBody.position);
-                    const hitPoint = intersects[0].point;
-                    grabLocalOffset.copy(hitPoint).sub(worldPos);
+                    // Store offset relative to body center to avoid torque physics chaos
+                    grabLocalOffset.set(0, 0, 0);
 
                     soundFX.playLatch();
                     document.getElementById('crosshair').classList.add('attached');
@@ -922,6 +924,9 @@
         }
 
         function releaseGrab() {
+            if (grabbedBody) {
+                grabbedBody.wakeUp();
+            }
             isGrabbing = false;
             grabbedBody = null;
             grabbedStaticMesh = null;
@@ -933,51 +938,55 @@
 
         function updateWormTendril(startPos, endPos) {
             const points = [];
-            const segments = 16;
+            const segments = 10;
             const time = Date.now() * 0.008;
 
             for (let i = 0; i <= segments; i++) {
                 const t = i / segments;
                 const p = new THREE.Vector3().lerpVectors(startPos, endPos, t);
 
-                // Add wavy sinusoidal oscillation to middle points
                 if (i > 0 && i < segments) {
-                    const wave = Math.sin(time + t * Math.PI * 4) * 0.15 * Math.sin(t * Math.PI);
+                    const wave = Math.sin(time + t * Math.PI * 4) * 0.05 * Math.sin(t * Math.PI);
                     p.x += wave;
-                    p.y += Math.cos(time + t * Math.PI * 3) * 0.1;
+                    p.y += wave;
                 }
                 points.push(p);
             }
 
             const curve = new THREE.CatmullRomCurve3(points);
-            const newGeo = new THREE.TubeGeometry(curve, 20, 0.06, 8, false);
-            tendrilMesh.geometry.dispose();
+            const newGeo = new THREE.TubeGeometry(curve, 12, 0.04, 8, false);
+            if (tendrilMesh.geometry) tendrilMesh.geometry.dispose();
             tendrilMesh.geometry = newGeo;
+            tendrilMesh.visible = true;
         }
 
         function updatePlayerMovement(delta) {
-            const moveDir = new THREE.Vector3();
-            if (moveForward) moveDir.z -= 1;
-            if (moveBackward) moveDir.z += 1;
-            if (moveLeft) moveDir.x -= 1;
-            if (moveRight) moveDir.x += 1;
+            if (!isLocked) return;
 
-            moveDir.normalize();
-            moveDir.applyQuaternion(camera.quaternion);
-            moveDir.y = 0; // Flat movement ground plane
-            moveDir.normalize();
+            let currentSpeed = walkSpeed;
+            if (isSprinting) currentSpeed = sprintSpeed;
+            if (isCrouching) currentSpeed = crouchSpeed;
 
-            let targetSpeed = walkSpeed;
-            if (isSprinting) targetSpeed = sprintSpeed;
-            if (isCrouching) targetSpeed = crouchSpeed;
+            const inputDir = new THREE.Vector3();
+            if (moveForward) inputDir.z -= 1;
+            if (moveBackward) inputDir.z += 1;
+            if (moveLeft) inputDir.x -= 1;
+            if (moveRight) inputDir.x += 1;
 
-            playerBody.velocity.x = moveDir.x * targetSpeed;
-            playerBody.velocity.z = moveDir.z * targetSpeed;
+            inputDir.normalize();
 
-            // Align camera with player physics body position
+            // Transform input direction by camera horizontal angle
+            const euler = new THREE.Euler(0, cameraRotation.y, 0, 'YXZ');
+            inputDir.applyEuler(euler);
+
+            playerBody.velocity.x = inputDir.x * currentSpeed;
+            playerBody.velocity.z = inputDir.z * currentSpeed;
+
+            // Keep camera anchored to player capsule body
+            const targetCamY = isCrouching ? 0.4 : 0.8;
             camera.position.x = playerBody.position.x;
+            camera.position.y = playerBody.position.y + targetCamY;
             camera.position.z = playerBody.position.z;
-            camera.position.y = playerBody.position.y + (isCrouching ? 0.3 : 0.8);
         }
 
         function updateGrabbedObject() {
@@ -986,39 +995,38 @@
             const handPos = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(0.8)).sub(new THREE.Vector3(0, 0.2, 0));
             const targetPos = camera.position.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(grabDistance));
 
+            // Elevate target position slightly so objects don't clip into the ground plane
+            if (targetPos.y < 1.0) {
+                targetPos.y = 1.0;
+            }
+
             if (isStaticGrab && grabbedStaticMesh) {
                 updateWormTendril(handPos, targetPos);
-                // Flying glitch mode on environment/static objects
-                const pullForce = targetPos.clone().sub(handPos).multiplyScalar(15);
-                playerBody.velocity.x += pullForce.x * 0.05;
-                playerBody.velocity.y += pullForce.y * 0.05;
-                playerBody.velocity.z += pullForce.z * 0.05;
+                // Smooth pull towards environmental anchors
+                const pullForce = targetPos.clone().sub(handPos).multiplyScalar(8);
+                playerBody.velocity.x += pullForce.x * 0.02;
+                playerBody.velocity.y += pullForce.y * 0.02;
+                playerBody.velocity.z += pullForce.z * 0.02;
                 return;
             }
 
             if (grabbedBody) {
-                // Properly convert CANNON.Vec3 to THREE.Vector3 before .add()
-                const localOffsetWorld = new THREE.Vector3(grabLocalOffset.x, grabLocalOffset.y, grabLocalOffset.z).applyQuaternion(grabbedBody.quaternion);
-                const currentAttachPoint = new THREE.Vector3(grabbedBody.position.x, grabbedBody.position.y, grabbedBody.position.z).add(localOffsetWorld);
+                const currentAttachPoint = new THREE.Vector3(grabbedBody.position.x, grabbedBody.position.y, grabbedBody.position.z);
 
                 updateWormTendril(handPos, currentAttachPoint);
 
-                // Apply velocity spring force to pull target body towards focus point
-                const force = targetPos.clone().sub(currentAttachPoint).multiplyScalar(25);
-                grabbedBody.velocity.x = force.x;
-                grabbedBody.velocity.y = force.y;
-                grabbedBody.velocity.z = force.z;
+                // Directly calculate velocity vector required to hit target smoothly
+                const vx = (targetPos.x - grabbedBody.position.x) * 12.0;
+                const vy = (targetPos.y - grabbedBody.position.y) * 12.0;
+                const vz = (targetPos.z - grabbedBody.position.z) * 12.0;
 
-                // Flying Glitch: If player stands on grabbed item, push player body upwards
-                const distToPlayer = playerBody.position.distanceTo(grabbedBody.position);
-                if (distToPlayer < 2.5 && playerBody.position.y > grabbedBody.position.y) {
-                    playerBody.velocity.y += 3.5;
-                }
+                grabbedBody.velocity.set(vx, vy, vz);
 
+                // Dampen rotational forces so item stays facing cleanly
                 if (isRotatingItem) {
-                    grabbedBody.angularVelocity.set(0, 5, 0);
+                    grabbedBody.angularVelocity.set(0, 4, 0);
                 } else {
-                    grabbedBody.angularVelocity.scale(0.9, grabbedBody.angularVelocity);
+                    grabbedBody.angularVelocity.scale(0.8, grabbedBody.angularVelocity);
                 }
             }
         }
@@ -1029,15 +1037,16 @@
             requestAnimationFrame(animate);
 
             const delta = Math.min(clock.getDelta(), 0.1);
+
+            // Step Cannon physics simulation
             world.step(1 / 60, delta, 3);
 
-            // Sync visual Three.js mesh transforms to physics Cannon.js bodies
+            // Sync visual meshes with physics body positions & quaternions
             for (let i = 0; i < physicsBodies.length; i++) {
                 const body = physicsBodies[i];
-                const mesh = body.userData ? body.userData.mesh : null;
-                if (mesh) {
-                    mesh.position.copy(body.position);
-                    mesh.quaternion.copy(body.quaternion);
+                if (body.userData && body.userData.mesh) {
+                    body.userData.mesh.position.copy(body.position);
+                    body.userData.mesh.quaternion.copy(body.quaternion);
                 }
             }
 
