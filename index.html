@@ -65,6 +65,13 @@
         .item .t{font-size:15px;font-weight:600;line-height:1.15;}
         .item .d{font-size:12px;font-weight:400;opacity:.7;}
 
+.actions{display:flex;gap:10px;margin-top:12px;padding-top:14px;border-top:2px dashed var(--ink);}
+        .act{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 6px;font-size:13px;font-weight:600;line-height:1.1;text-align:center;color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s,filter .15s;}
+        .act i{font-size:17px;}
+        .act.tp{background:#9be58a;}
+        .act.clear{background:var(--coral);color:#fff;}
+        .act:hover{filter:brightness(1.07);}
+        .act:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink);}
         #toast{background:var(--ink);color:#fff;font-size:14px;font-weight:500;padding:8px 16px;border-radius:12px;border:2px solid #fff;}
 
         @media (max-width:640px){.logo{font-size:42px;-webkit-text-stroke-width:7px}.grid{grid-template-columns:1fr}.hb:nth-child(n+6){display:none}}
@@ -95,10 +102,10 @@
                 <div><span class="key">Space</span> Jump</div>
                 <div><span class="key">O</span> Anchor</div>
                 <div><span class="key">I</span> Unanchor</div>
-                <div><span class="key">L</span> Glue touching</div>
-                <div><span class="key">K</span> Unglue</div>
+                <div><span class="key">L</span> Chain</div>
+                <div><span class="key">K</span> Unchain</div>
                 <div><span class="key">P</span> Delete held</div>
-                <div><span class="key">M</span> Back to spawn</div>
+                <div><span class="key">M</span> To spawn</div>
                 <div style="grid-column:1/-1"><span class="key">E</span> Open the item spawner</div>
             </div>
             <button id="start-game-btn" class="play">Play</button>
@@ -112,8 +119,8 @@
     </div>
     <div id="hotbar">
         <div class="hb"><span class="key">LMB</span> Grab</div><div class="hb"><span class="key">RMB</span> Fling</div><div class="hb"><span class="key">F</span> Rotate</div>
-        <div class="hb"><span class="key">O</span><span class="key">I</span> Anchor</div><div class="hb"><span class="key">L</span><span class="key">K</span> Glue</div><div class="hb"><span class="key">P</span> Delete</div>
-        <div class="hb"><span class="key">M</span> Spawn point</div><div class="hb"><span class="key">E</span> Items</div>
+        <div class="hb"><span class="key">O</span><span class="key">I</span> Anchor</div><div class="hb"><span class="key">L</span><span class="key">K</span> Chain</div><div class="hb"><span class="key">P</span> Delete</div>
+        <div class="hb"><span class="key">M</span> To spawn</div><div class="hb"><span class="key">E</span> Items</div>
     </div>
 
     <!-- Object Spawner Drawer -->
@@ -125,24 +132,24 @@
         <div class="list">
             <button onclick="spawnObject('pallet'); this.blur()" class="item">
                 <div class="tile" style="background:#f3b36b"><i class="fa-solid fa-pallet"></i></div>
-                <div><div class="t">IKEA Wooden Pallet</div><div class="d">Flyable stable platform</div></div>
+                <div><div class="t">Pallet</div><div class="d">Wide platform</div></div>
             </button>
             <button onclick="spawnObject('dummy'); this.blur()" class="item">
                 <div class="tile" style="background:#ffd75e"><i class="fa-solid fa-user-ninja"></i></div>
-                <div><div class="t">Roblox Dummy</div><div class="d">Connected joint ragdoll</div></div>
+                <div><div class="t">Dummy</div><div class="d">Connected joint ragdoll</div></div>
             </button>
             <button onclick="spawnObject('cube'); this.blur()" class="item">
                 <div class="tile" style="background:#8fe3f0"><i class="fa-solid fa-cube"></i></div>
-                <div><div class="t">Heavy Wooden Crate</div><div class="d">Standard physics block</div></div>
+                <div><div class="t">Cube</div><div class="d">Standard physics block</div></div>
             </button>
             <button onclick="spawnObject('ball'); this.blur()" class="item">
                 <div class="tile" style="background:#ff9a8b"><i class="fa-solid fa-bowling-ball"></i></div>
-                <div><div class="t">Bouncy Sphere</div><div class="d">High elasticity ball</div></div>
+                <div><div class="t">Ball</div><div class="d">High elasticity ball</div></div>
             </button>
-            <button onclick="teleportToSpawn(); this.blur()" class="item">
-                <div class="tile" style="background:#9be58a"><i class="fa-solid fa-location-crosshairs"></i></div>
-                <div><div class="t">Teleport to Spawn</div><div class="d">Same as pressing M</div></div>
-            </button>
+                    </div>
+        <div class="actions">
+            <button onclick="teleportToSpawn(); this.blur()" class="act tp"><i class="fa-solid fa-house-flag"></i><span>To spawn</span></button>
+            <button onclick="clearAllItems(this); this.blur()" class="act clear"><i class="fa-solid fa-trash-can"></i><span>Clear all items</span></button>
         </div>
     </div>
 
@@ -641,6 +648,21 @@ let hoverTick = 0;
             });
         }
 
+let clearArmed = false, clearTimer;
+        function clearAllItems(btn) {
+            const label = btn.querySelector('span');
+            if (!clearArmed) {   // two-step so it can't be hit by accident
+                clearArmed = true; label.textContent = 'Sure? Click again';
+                clearTimer = setTimeout(() => { clearArmed = false; label.textContent = 'Clear all items'; }, 2500);
+                return;
+            }
+            clearArmed = false; clearTimeout(clearTimer); label.textContent = 'Clear all items';
+            const n = physicsBodies.length;
+            releaseGrab();
+            physicsBodies.slice().forEach(removeBody);
+            showToast('Cleared ' + n + ' item' + (n === 1 ? '' : 's'));
+        }
+
         function teleportToSpawn() {
             playerBody.position.set(SPAWN.x, SPAWN.y, SPAWN.z);
             playerBody.previousPosition.set(SPAWN.x, SPAWN.y, SPAWN.z);
@@ -862,7 +884,7 @@ let hoverTick = 0;
             if (getAssembly(body).some(b => activeAnchors.has(b))) anchorItem(body);
             refreshGrabGroup();
             if (n) soundFX.playLatch();
-            showToast(n ? 'Glued to ' + n + ' touching item' + (n > 1 ? 's' : '') : 'Nothing touching to glue');
+            showToast(n ? 'Chained to ' + n + ' touching item' + (n > 1 ? 's' : '') : 'Nothing touching to chain');
         }
 
         function removeLinks(b) {
@@ -879,7 +901,7 @@ let hoverTick = 0;
             others.forEach(o => o.wakeUp());
             body.wakeUp();
             refreshGrabGroup();
-            showToast(had ? 'Unglued' : 'Not glued to anything');
+            showToast(had ? 'Unchained' : 'Not chained to anything');
         }
 
         function removeBody(p) {
@@ -937,7 +959,7 @@ let hoverTick = 0;
 
             body.userData.mesh = mesh;
             mesh.userData.body = body;
-            mesh.userData.name = "Heavy Crate";
+            mesh.userData.name = "Cube";
 
             meshes.push(mesh);
             physicsBodies.push(body);
@@ -961,7 +983,7 @@ let hoverTick = 0;
 
             body.userData.mesh = mesh;
             mesh.userData.body = body;
-            mesh.userData.name = "Bouncy Sphere";
+            mesh.userData.name = "Ball";
 
             meshes.push(mesh);
             physicsBodies.push(body);
@@ -986,7 +1008,7 @@ let hoverTick = 0;
 
             body.userData.mesh = mesh;
             mesh.userData.body = body;
-            mesh.userData.name = "Big IKEA Pallet";
+            mesh.userData.name = "Pallet";
 
             meshes.push(mesh);
             physicsBodies.push(body);
