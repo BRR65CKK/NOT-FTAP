@@ -65,7 +65,14 @@
         .item .t{font-size:15px;font-weight:600;line-height:1.15;}
         .item .d{font-size:12px;font-weight:400;opacity:.7;}
 
-.actions{display:flex;gap:10px;margin-top:12px;padding-top:14px;border-top:2px dashed var(--ink);}
+.item.boom{background:#fff1ee;border-style:dashed;}
+        .sec{margin:6px 0 0;font-size:15px;font-weight:700;}
+        .shapes{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:4px;}
+        .chip{display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:14px;font-weight:600;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:2px 2px 0 var(--ink);transition:transform .12s,box-shadow .12s;}
+        .chip:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink);}
+        .chip:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink);}
+        .mini{width:28px;height:28px;flex:none;border:2px solid var(--ink);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;}
+        .actions{display:flex;gap:10px;margin-top:12px;padding-top:14px;border-top:2px dashed var(--ink);}
         .act{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 6px;font-size:13px;font-weight:600;line-height:1.1;text-align:center;color:var(--ink);border:3px solid var(--ink);border-radius:999px;box-shadow:0 4px 0 var(--ink);transition:transform .08s,box-shadow .08s,filter .15s;}
         .act i{font-size:17px;}
         .act.tp{background:#9be58a;}
@@ -106,6 +113,8 @@
                 <div><span class="key">K</span> Unchain</div>
                 <div><span class="key">P</span> Delete held</div>
                 <div><span class="key">M</span> To spawn</div>
+                <div><span class="key">J</span> Paint held item</div>
+                <div><span class="key">B</span> Detonate explosive</div>
                 <div style="grid-column:1/-1"><span class="key">E</span> Open the item spawner</div>
             </div>
             <button id="start-game-btn" class="play">Play</button>
@@ -119,7 +128,7 @@
     </div>
     <div id="hotbar">
         <div class="hb"><span class="key">LMB</span> Grab</div><div class="hb"><span class="key">RMB</span> Fling</div><div class="hb"><span class="key">F</span> Rotate</div>
-        <div class="hb"><span class="key">O</span><span class="key">I</span> Anchor</div><div class="hb"><span class="key">L</span><span class="key">K</span> Chain</div><div class="hb"><span class="key">P</span> Delete</div>
+        <div class="hb"><span class="key">O</span><span class="key">I</span> Anchor</div><div class="hb"><span class="key">L</span><span class="key">K</span> Chain</div><div class="hb"><span class="key">P</span> Delete</div><div class="hb"><span class="key">J</span> Paint</div><div class="hb"><span class="key">B</span> Detonate</div>
         <div class="hb"><span class="key">M</span> To spawn</div><div class="hb"><span class="key">E</span> Items</div>
     </div>
 
@@ -138,15 +147,26 @@
                 <div class="tile" style="background:#ffd75e"><i class="fa-solid fa-user-ninja"></i></div>
                 <div><div class="t">Dummy</div><div class="d">Connected joint ragdoll</div></div>
             </button>
-            <button onclick="spawnObject('cube'); this.blur()" class="item">
-                <div class="tile" style="background:#8fe3f0"><i class="fa-solid fa-cube"></i></div>
-                <div><div class="t">Cube</div><div class="d">Standard physics block</div></div>
+            <button onclick="spawnObject('explosive'); this.blur()" class="item boom">
+                <div class="tile" style="background:#ff6a55;color:#fff"><i class="fa-solid fa-bomb"></i></div>
+                <div><div class="t">Explosive</div><div class="d">Blows on B or a hard hit</div></div>
             </button>
-            <button onclick="spawnObject('ball'); this.blur()" class="item">
-                <div class="tile" style="background:#ff9a8b"><i class="fa-solid fa-bowling-ball"></i></div>
-                <div><div class="t">Ball</div><div class="d">High elasticity ball</div></div>
-            </button>
-                    </div>
+                                    <div class="sec">Shapes</div>
+            <div class="shapes">
+                <button onclick="spawnObject('cube'); this.blur()" class="chip"><span class="mini" style="background:#38bdf8"><i class="fa-solid fa-cube"></i></span>Cube</button>
+                <button onclick="spawnObject('ball'); this.blur()" class="chip"><span class="mini" style="background:#f43f5e"><i class="fa-solid fa-bowling-ball"></i></span>Ball</button>
+                <button onclick="spawnObject('cone'); this.blur()" class="chip"><span class="mini" style="background:#f97316"><i class="fa-solid fa-ice-cream"></i></span>Cone</button>
+                <button onclick="spawnObject('pyramid'); this.blur()" class="chip"><span class="mini" style="background:#eab308"><i class="fa-solid fa-mountain"></i></span>Pyramid</button>
+                <button onclick="spawnObject('cylinder'); this.blur()" class="chip"><span class="mini" style="background:#8b5cf6"><i class="fa-solid fa-database"></i></span>Cylinder</button>
+                <button onclick="spawnObject('wheel'); this.blur()" class="chip"><span class="mini" style="background:#475569"><i class="fa-solid fa-compact-disc"></i></span>Wheel</button>
+                <button onclick="spawnObject('ramp'); this.blur()" class="chip"><span class="mini" style="background:#22c55e"><i class="fa-solid fa-chart-area"></i></span>Ramp</button>
+                <button onclick="spawnObject('stairs'); this.blur()" class="chip"><span class="mini" style="background:#94a3b8"><i class="fa-solid fa-stairs"></i></span>Stairs</button>
+                <button onclick="spawnObject('semicircle'); this.blur()" class="chip"><span class="mini" style="background:#ec4899"><i class="fa-solid fa-circle-half-stroke"></i></span>Semicircle</button>
+                <button onclick="spawnObject('dome'); this.blur()" class="chip"><span class="mini" style="background:#14b8a6"><i class="fa-solid fa-igloo"></i></span>Dome</button>
+                <button onclick="spawnObject('prism'); this.blur()" class="chip"><span class="mini" style="background:#ef4444"><i class="fa-solid fa-caret-up"></i></span>Prism</button>
+                <button onclick="spawnObject('plank'); this.blur()" class="chip"><span class="mini" style="background:#d97706"><i class="fa-solid fa-ruler-horizontal"></i></span>Plank</button>
+            </div>
+        </div>
         <div class="actions">
             <button onclick="teleportToSpawn(); this.blur()" class="act tp"><i class="fa-solid fa-house-flag"></i><span>To spawn</span></button>
             <button onclick="clearAllItems(this); this.blur()" class="act clear"><i class="fa-solid fa-trash-can"></i><span>Clear all items</span></button>
@@ -182,6 +202,23 @@
                 gain.connect(this.ctx.destination);
                 osc.start();
                 osc.stop(this.ctx.currentTime + 0.08);
+            }
+
+playBoom() {
+                this.init();
+                if (!this.ctx) return;
+                const c = this.ctx, t = c.currentTime, n = Math.floor(c.sampleRate * 0.9);
+                const buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+                for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.2);
+                const src = c.createBufferSource(); src.buffer = buf;
+                const lp = c.createBiquadFilter(); lp.type = 'lowpass';
+                lp.frequency.setValueAtTime(1800, t); lp.frequency.exponentialRampToValueAtTime(120, t + 0.8);
+                const g = c.createGain(); g.gain.value = 0.7;
+                src.connect(lp); lp.connect(g); g.connect(c.destination); src.start(t);
+                const o = c.createOscillator(), og = c.createGain();
+                o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(28, t + 0.5);
+                og.gain.setValueAtTime(0.6, t); og.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+                o.connect(og); og.connect(c.destination); o.start(t); o.stop(t + 0.5);
             }
 
             playFling() {
@@ -759,6 +796,8 @@ let clearArmed = false, clearTimer;
                     case 'KeyI': if (!e.repeat && held) { unanchorItem(grabbedBody); showToast('Unanchored'); } break;
                     case 'KeyL': if (!e.repeat && held) chainItem(grabbedBody); break;
                     case 'KeyK': if (!e.repeat && held) unchainItem(grabbedBody); break;
+                    case 'KeyJ': if (!e.repeat && held) paintItem(grabbedBody); break;
+                    case 'KeyB': if (!e.repeat && isLocked) detonateHeldOrAimed(); break;
                     case 'KeyM': if (!e.repeat && gameStarted) teleportToSpawn(); break;
                     case 'KeyE':
                         if (isLocked) {
@@ -938,7 +977,175 @@ let clearArmed = false, clearTimer;
                 createPhysicsCube(spawnPos);
             } else if (type === 'ball') {
                 createPhysicsBall(spawnPos);
+            } else if (SHAPES[type]) {
+                createShape(type, spawnPos);
             }
+        }
+
+// Exact convex collider built from the same geometry that is drawn
+        function convexFromGeos(geos) {
+            const map = new Map(), pts = [], faces = [];
+            geos.forEach(geo => {
+                const pa = geo.attributes.position, ix = geo.index, n = ix ? ix.count : pa.count;
+                const vid = i => {
+                    const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i), k = x.toFixed(4) + ',' + y.toFixed(4) + ',' + z.toFixed(4);
+                    if (!map.has(k)) { map.set(k, pts.length); pts.push(new CANNON.Vec3(x, y, z)); }
+                    return map.get(k);
+                };
+                for (let i = 0; i < n; i += 3) {
+                    const a = vid(ix ? ix.getX(i) : i), b = vid(ix ? ix.getX(i + 1) : i + 1), c = vid(ix ? ix.getX(i + 2) : i + 2);
+                    if (a === b || b === c || a === c) continue;
+                    if (pts[b].vsub(pts[a]).cross(pts[c].vsub(pts[b])).norm() < 1e-6) continue;
+                    faces.push([a, b, c]);
+                }
+            });
+            const cen = new CANNON.Vec3(); pts.forEach(q => cen.vadd(q, cen)); cen.scale(1 / pts.length, cen);
+            faces.forEach(f => {   // wind every face outward
+                const nr = pts[f[1]].vsub(pts[f[0]]).cross(pts[f[2]].vsub(pts[f[1]]));
+                if (nr.dot(pts[f[0]].vsub(cen)) < 0) f.reverse();
+            });
+            return new CANNON.ConvexPolyhedron(pts, faces);
+        }
+
+        const extrude = (shape, depth) => { const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 16 }); g.center(); return g; };
+
+        const SHAPES = {
+            cone: () => ({ color: 0xf97316, mass: 8, parts: [{ geo: new THREE.ConeGeometry(0.9, 1.8, 10) }] }),
+            pyramid: () => ({ color: 0xeab308, mass: 12, flat: true, parts: [{ geo: new THREE.ConeGeometry(1.2, 1.6, 4).rotateY(Math.PI / 4) }] }),
+            cylinder: () => ({ color: 0x8b5cf6, mass: 12, parts: [{ geo: new THREE.CylinderGeometry(0.6, 0.6, 1.6, 18) }] }),
+            wheel: () => ({ color: 0x1f2937, mass: 14, parts: [
+                { geo: new THREE.CylinderGeometry(1, 1, 0.5, 22).rotateX(Math.PI / 2) },
+                { geo: new THREE.CylinderGeometry(0.45, 0.45, 0.56, 14).rotateX(Math.PI / 2), color: 0xcbd5e1, hull: false, keep: true }] }),
+            ramp: () => ({ color: 0x22c55e, mass: 20, flat: true, parts: [{ geo: extrude(new THREE.Shape().moveTo(0, 0).lineTo(4, 0).lineTo(4, 1.6), 3) }] }),
+            semicircle: () => ({ color: 0xec4899, mass: 15, parts: [{ geo: extrude(new THREE.Shape().moveTo(-1, 0).absarc(0, 0, 1, Math.PI, 0, true), 3) }] }),
+            dome: () => ({ color: 0x14b8a6, mass: 10, parts: [
+                { geo: new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, -0.3, 0) },
+                { geo: new THREE.CircleGeometry(1, 18).rotateX(Math.PI / 2).translate(0, -0.3, 0), double: true }] }),
+            prism: () => ({ color: 0xef4444, mass: 10, flat: true, parts: [{ geo: extrude(new THREE.Shape().moveTo(-0.8, 0).lineTo(0.8, 0).lineTo(0, 1.4), 2) }] }),
+            explosive: () => ({ color: 0xdc2626, mass: 12, explosive: true, parts: [
+                { geo: new THREE.CylinderGeometry(0.55, 0.55, 1.2, 18) },
+                { geo: new THREE.CylinderGeometry(0.58, 0.58, 0.14, 18).translate(0, 0.3, 0), color: 0xfacc15, hull: false, keep: true },
+                { geo: new THREE.CylinderGeometry(0.58, 0.58, 0.14, 18).translate(0, -0.3, 0), color: 0xfacc15, hull: false, keep: true },
+                { geo: new THREE.CylinderGeometry(0.2, 0.2, 0.18, 10).translate(0, 0.66, 0), color: 0x1f2937, hull: false, keep: true }] }),
+            plank: () => ({ color: 0xd97706, mass: 12, parts: [{ geo: new THREE.BoxGeometry(5, 0.25, 0.9) }], boxes: [{ half: [2.5, 0.125, 0.45], off: [0, 0, 0] }] }),
+            stairs: () => {
+                const parts = [], boxes = [], n = 5, w = 3, dp = 0.9, st = 0.4;
+                for (let i = 0; i < n; i++) {
+                    const h = (i + 1) * st, y = h / 2 - (n * st) / 2, z = i * dp + dp / 2 - (n * dp) / 2;
+                    parts.push({ geo: new THREE.BoxGeometry(w, h, dp).translate(0, y, z) });
+                    boxes.push({ half: [w / 2, h / 2, dp / 2], off: [0, y, z] });
+                }
+                return { color: 0x94a3b8, mass: 30, parts, boxes };
+            }
+        };
+        const SHAPE_NAMES = { explosive: 'Explosive', cone: 'Cone', pyramid: 'Pyramid', cylinder: 'Cylinder', wheel: 'Wheel', ramp: 'Ramp', stairs: 'Stairs', semicircle: 'Semicircle', dome: 'Dome', prism: 'Prism', plank: 'Plank' };
+
+        function createShape(key, pos) {
+            const d = SHAPES[key](), root = new THREE.Group();
+            const body = new CANNON.Body({ mass: d.mass, material: defaultMaterial });
+            const hull = [];
+            d.parts.forEach(pt => {
+                const m = new THREE.Mesh(pt.geo, new THREE.MeshStandardMaterial({ color: pt.color || d.color, roughness: 0.55, flatShading: !!d.flat, side: pt.double ? THREE.DoubleSide : THREE.FrontSide }));
+                m.castShadow = true; m.receiveShadow = true; m.userData.keepColor = !!pt.keep;
+                root.add(m);
+                if (pt.hull !== false) hull.push(pt.geo);
+            });
+            if (d.boxes) d.boxes.forEach(b => body.addShape(new CANNON.Box(new CANNON.Vec3(...b.half)), new CANNON.Vec3(...b.off)));
+            else body.addShape(convexFromGeos(hull));
+            root.position.copy(pos);
+            scene.add(root);
+            body.userData = { isSpawnedObject: true };
+            body.position.copy(pos);
+            world.addBody(body);
+            body.userData.mesh = root;
+            root.userData.body = body;
+            root.userData.name = SHAPE_NAMES[key];
+if (d.explosive) {
+                body.userData.explosive = true;
+                body.userData.armedAt = performance.now() + 700;   // won't pop while it drops in
+                body.addEventListener('collide', e => {
+                    if (performance.now() < body.userData.armedAt || body.userData.exploded) return;
+                    if (Math.abs(e.contact.getImpactVelocityAlongNormal()) > 30) boomQueue.push(body);
+                });
+            }
+            meshes.push(root);
+            physicsBodies.push(body);
+        }
+
+        // ---- Paint ----
+        const PAINTS = [['Red', 0xef4444], ['Orange', 0xf97316], ['Yellow', 0xfacc15], ['Lime', 0x84cc16], ['Green', 0x22c55e], ['Teal', 0x14b8a6],
+            ['Sky', 0x38bdf8], ['Blue', 0x3b82f6], ['Purple', 0x8b5cf6], ['Pink', 0xec4899], ['White', 0xf8fafc], ['Black', 0x1f2937], ['Brown', 0x92400e]];
+        function paintItem(body) {
+            const root = body && body.userData.mesh;
+            if (!root) return;
+            const idx = ((root.userData.paintIdx === undefined ? -1 : root.userData.paintIdx) + 1) % PAINTS.length;
+            root.userData.paintIdx = idx;
+            root.traverse(m => {
+                if (!m.isMesh || m.userData.keepColor) return;
+                if (!m.userData.ownMat) { m.material = m.material.clone(); m.userData.ownMat = true; }   // dummy parts share one material
+                m.material.color.setHex(PAINTS[idx][1]);
+            });
+            showToast('Painted ' + PAINTS[idx][0]);
+        }
+
+        // ---- Explosives ----
+        const boomQueue = [], blasts = [];
+        function spawnBlast(c) {
+            const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), new THREE.MeshBasicMaterial({ color: 0xffb347, transparent: true, opacity: 0.9, depthWrite: false }));
+            const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 40), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthWrite: false }));
+            ball.position.copy(c); ring.position.copy(c); ring.rotation.x = -Math.PI / 2;
+            scene.add(ball, ring);
+            blasts.push({ ball, ring, t: 0 });
+        }
+        function updateFX(dt) {
+            for (let i = blasts.length - 1; i >= 0; i--) {
+                const f = blasts[i]; f.t += dt;
+                const k = f.t / 0.55;
+                if (k >= 1) { scene.remove(f.ball, f.ring); f.ball.geometry.dispose(); f.ring.geometry.dispose(); blasts.splice(i, 1); continue; }
+                const e = 1 - Math.pow(1 - k, 3);
+                f.ball.scale.setScalar(2 + e * 9); f.ball.material.opacity = 0.9 * (1 - k);
+                f.ring.scale.setScalar(1 + e * 18); f.ring.material.opacity = 0.7 * (1 - k);
+            }
+        }
+        const BLAST_RADIUS = 18;
+        function detonate(body) {
+            if (!body || body.userData.exploded) return;
+            body.userData.exploded = true;
+            const c = bp(body);
+            removeBody(body);
+            spawnBlast(c);
+            soundFX.playBoom();
+            physicsBodies.slice().forEach(b => {
+                if (b.type !== CANNON.Body.DYNAMIC) return;   // anchored items stay put
+                const d = bp(b).sub(c), dist = d.length();
+                if (dist > BLAST_RADIUS) return;
+                if (b.userData.explosive) setTimeout(() => boomQueue.push(b), 80 + dist * 8);   // chain reaction
+                const f = 1 - dist / BLAST_RADIUS;
+                if (dist < 0.01) d.set(0, 1, 0);
+                d.y += 0.35 * Math.max(dist, 1); d.normalize();
+                const dv = 75 * f * Math.min(1.5, Math.sqrt(12 / Math.max(b.mass, 3)));
+                b.velocity.x += d.x * dv; b.velocity.y += d.y * dv; b.velocity.z += d.z * dv;
+                b.wakeUp();
+            });
+            const pd = bp(playerBody).sub(c), pdist = pd.length();
+            if (pdist < BLAST_RADIUS) {
+                const f = 1 - pdist / BLAST_RADIUS;
+                pd.y += 0.5 * Math.max(pdist, 1); pd.normalize();
+                playerBody.velocity.x += pd.x * 65 * f; playerBody.velocity.y += pd.y * 65 * f; playerBody.velocity.z += pd.z * 65 * f;
+                grounded = false; lastJump = performance.now();   // lift off so ground friction doesn't eat the push
+            }
+        }
+        function detonateHeldOrAimed() {
+            let t = grabbedBody && grabbedBody.userData.explosive ? grabbedBody : null;
+            if (!t) {
+                hoverRay.setFromCamera(new THREE.Vector2(0, 0), camera);
+                hoverRay.far = maxGrabDistance;
+                const hit = hoverRay.intersectObjects(meshes, true)[0];
+                let o = hit && hit.object;
+                while (o && !(o.userData && o.userData.body)) o = o.parent;
+                if (o && o.userData.body.userData.explosive) t = o.userData.body;
+            }
+            if (t) detonate(t); else showToast('No explosive held or aimed at');
         }
 
         function createPhysicsCube(pos) {
@@ -1255,6 +1462,7 @@ let clearArmed = false, clearTimer;
             const delta = Math.min(clock.getDelta(), 0.1);
 
             world.step(1 / 60, delta, 3);
+            while (boomQueue.length) detonate(boomQueue.pop());
 
             // Anything that falls into the ocean is deleted
             for (let i = physicsBodies.length - 1; i >= 0; i--) {
@@ -1275,6 +1483,7 @@ let clearArmed = false, clearTimer;
             updateGrabbedObject(delta);
             updateAtmosphere(delta);
             updateHover();
+            updateFX(delta);
 
             renderer.render(scene, camera);
         }
