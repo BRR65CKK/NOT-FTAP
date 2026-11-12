@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Not-Fling Things And People</title>
+    <title>NOT-Fling Things And People</title>
     <!-- Tailwind CSS for UI overlay -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Three.js Library -->
@@ -170,7 +170,7 @@
         </div>
 
         <div class="space-y-3 overflow-y-auto flex-1 pr-1">
-            <button onclick="spawnObject('pallet'); this.blur()" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
+            <button onclick="spawnObject('pallet')" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
                 <div class="w-10 h-10 bg-amber-900/40 text-amber-500 rounded-lg flex items-center justify-center font-bold"><i class="fa-solid fa-pallet"></i></div>
                 <div>
                     <div class="text-sm font-semibold text-white">IKEA Wooden Pallet</div>
@@ -178,7 +178,7 @@
                 </div>
             </button>
 
-            <button onclick="spawnObject('dummy'); this.blur()" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
+            <button onclick="spawnObject('dummy')" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
                 <div class="w-10 h-10 bg-yellow-900/40 text-yellow-400 rounded-lg flex items-center justify-center font-bold"><i class="fa-solid fa-user-ninja"></i></div>
                 <div>
                     <div class="text-sm font-semibold text-white">Roblox Dummy</div>
@@ -186,7 +186,7 @@
                 </div>
             </button>
 
-            <button onclick="spawnObject('cube'); this.blur()" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
+            <button onclick="spawnObject('cube')" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
                 <div class="w-10 h-10 bg-cyan-900/40 text-cyan-400 rounded-lg flex items-center justify-center font-bold"><i class="fa-solid fa-cube"></i></div>
                 <div>
                     <div class="text-sm font-semibold text-white">Heavy Wooden Crate</div>
@@ -194,7 +194,7 @@
                 </div>
             </button>
 
-            <button onclick="spawnObject('ball'); this.blur()" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
+            <button onclick="spawnObject('ball')" class="w-full p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-left rounded-xl flex items-center space-x-3 transition">
                 <div class="w-10 h-10 bg-rose-900/40 text-rose-400 rounded-lg flex items-center justify-center font-bold"><i class="fa-solid fa-bowling-ball"></i></div>
                 <div>
                     <div class="text-sm font-semibold text-white">Bouncy Sphere</div>
@@ -411,10 +411,9 @@
                 }
             }
 
-            // Default sandbox props: one dummy and one pallet.
-            // Keep them in front of the player, with the pallet resting on the ground.
-            spawnObject('dummy', new THREE.Vector3(-3, 1, -7));
-            spawnObject('pallet', new THREE.Vector3(3, 0.175, -7));
+            spawnObject('dummy', new THREE.Vector3(-3, 2.5, -5));
+            spawnObject('dummy', new THREE.Vector3(0, 2.5, -5));
+            spawnObject('dummy', new THREE.Vector3(3, 2.5, -5));
         }
 
         function createTendrilLine() {
@@ -512,12 +511,6 @@
             });
 
             document.addEventListener('keydown', (e) => {
-                // Space is a game control, not a browser button-activation shortcut.
-                // This prevents a focused spawner button from spawning another item.
-                if (e.code === 'Space' && isLocked) {
-                    e.preventDefault();
-                }
-
                 switch (e.code) {
                     case 'KeyW': moveForward = true; break;
                     case 'KeyS': moveBackward = true; break;
@@ -566,7 +559,7 @@
                         }
                         break;
                     case 'Space':
-                        if (isLocked && !isSpawnerOpen && canJump) {
+                        if (canJump) {
                             playerBody.velocity.y = 12;
                         }
                         break;
