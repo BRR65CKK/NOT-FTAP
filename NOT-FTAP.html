@@ -65,7 +65,11 @@
         .item .t{font-size:15px;font-weight:600;line-height:1.15;}
         .item .d{font-size:12px;font-weight:400;opacity:.7;}
 
-.item.boom{background:#fff1ee;border-style:dashed;}
+.toggle{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding:8px 12px;font-size:14px;font-weight:600;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:2px 2px 0 var(--ink);}
+        .toggle b{padding:2px 12px;border-radius:999px;border:2px solid var(--ink);background:#cbd5e1;font-size:12px;}
+        .toggle.on b{background:var(--leaf);}
+        .toggle:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+        .item.boom{background:#fff1ee;border-style:dashed;}
         .sec{margin:6px 0 0;font-size:15px;font-weight:700;}
         .shapes{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:4px;}
         .chip{display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:14px;font-weight:600;color:var(--ink);background:#fff;border:2px solid var(--ink);border-radius:12px;box-shadow:2px 2px 0 var(--ink);transition:transform .12s,box-shadow .12s;}
@@ -102,7 +106,7 @@
                 <div><span class="key">LMB</span> Grab / drop</div>
                 <div><span class="key">RMB</span> Fling</div>
                 <div><span class="key">Wheel</span> Push / pull</div>
-                <div><span class="key">F</span> + mouse Rotate</div>
+                <div><span class="key">R</span> + mouse Rotate</div>
                 <div><span class="key">W</span> <span class="key">A S D</span> Move</div>
                 <div><span class="key">Shift</span> Sprint</div>
                 <div><span class="key">C</span> Crouch</div>
@@ -114,8 +118,9 @@
                 <div><span class="key">P</span> Delete held</div>
                 <div><span class="key">M</span> To spawn</div>
                 <div><span class="key">J</span> Paint held item</div>
-                <div><span class="key">B</span> Detonate explosive</div>
-                <div style="grid-column:1/-1"><span class="key">E</span> Open the item spawner</div>
+                <div><span class="key">Q</span> Interact</div>
+                <div><span class="key">E</span> Item spawner</div>
+                <div><span class="key">N</span><span class="key">N</span> Grapple pull</div>
             </div>
             <button id="start-game-btn" class="play">Play</button>
         </div>
@@ -127,8 +132,8 @@
         <span>Holding: <b id="target-info">None</b></span>
     </div>
     <div id="hotbar">
-        <div class="hb"><span class="key">LMB</span> Grab</div><div class="hb"><span class="key">RMB</span> Fling</div><div class="hb"><span class="key">F</span> Rotate</div>
-        <div class="hb"><span class="key">O</span><span class="key">I</span> Anchor</div><div class="hb"><span class="key">L</span><span class="key">K</span> Chain</div><div class="hb"><span class="key">P</span> Delete</div><div class="hb"><span class="key">J</span> Paint</div><div class="hb"><span class="key">B</span> Detonate</div>
+        <div class="hb"><span class="key">LMB</span> Grab</div><div class="hb"><span class="key">RMB</span> Fling</div><div class="hb"><span class="key">R</span> Rotate</div>
+        <div class="hb"><span class="key">O</span><span class="key">I</span> Anchor</div><div class="hb"><span class="key">L</span><span class="key">K</span> Chain</div><div class="hb"><span class="key">P</span> Delete</div><div class="hb"><span class="key">J</span> Paint</div><div class="hb"><span class="key">Q</span> Interact</div>
         <div class="hb"><span class="key">M</span> To spawn</div><div class="hb"><span class="key">E</span> Items</div>
     </div>
 
@@ -149,9 +154,13 @@
             </button>
             <button onclick="spawnObject('explosive'); this.blur()" class="item boom">
                 <div class="tile" style="background:#ff6a55;color:#fff"><i class="fa-solid fa-bomb"></i></div>
-                <div><div class="t">Explosive</div><div class="d">Blows on B or a hard hit</div></div>
+                <div><div class="t">Explosive</div><div class="d">Press its button, Q, or hit it hard</div></div>
             </button>
-                                    <div class="sec">Shapes</div>
+                                    <button onclick="spawnObject('box'); this.blur()" class="item">
+                <div class="tile" style="background:#c4b5fd"><i class="fa-solid fa-box-open"></i></div>
+                <div><div class="t">Box</div><div class="d">Big, hollow, open top</div></div>
+            </button>
+            <div class="sec">Shapes</div>
             <div class="shapes">
                 <button onclick="spawnObject('cube'); this.blur()" class="chip"><span class="mini" style="background:#38bdf8"><i class="fa-solid fa-cube"></i></span>Cube</button>
                 <button onclick="spawnObject('ball'); this.blur()" class="chip"><span class="mini" style="background:#f43f5e"><i class="fa-solid fa-bowling-ball"></i></span>Ball</button>
@@ -167,6 +176,7 @@
                 <button onclick="spawnObject('plank'); this.blur()" class="chip"><span class="mini" style="background:#d97706"><i class="fa-solid fa-ruler-horizontal"></i></span>Plank</button>
             </div>
         </div>
+        <button id="grapple-btn" onclick="setGrapple(!grapplePull); this.blur()" class="toggle"><span><i class="fa-solid fa-spider" style="margin-right:8px"></i>Grapple pull <small style="opacity:.6">(N N)</small></span><b id="grapple-state">OFF</b></button>
         <div class="actions">
             <button onclick="teleportToSpawn(); this.blur()" class="act tp"><i class="fa-solid fa-house-flag"></i><span>To spawn</span></button>
             <button onclick="clearAllItems(this); this.blur()" class="act clear"><i class="fa-solid fa-trash-can"></i><span>Clear all items</span></button>
@@ -265,7 +275,7 @@ playBoom() {
         let isSpawnerOpen = false;
         let activeAnchors = new Map();
         const SPAWN = { x: 0, y: 3, z: 0 }, ISLAND_HALF = 180, OCEAN_Y = -3;
-        let gameStarted = false;
+        let gameStarted = false, grapplePull = false, lastN = 0;
         let glueLinks = [], grabGroup = [], grabLocal = new THREE.Vector3();
         let groundNY = 1, grounded = false, groundVel = null, lastJump = 0, camHeight = 0.8;
         let tendrilInit = false, ribbonGeo, tendrilSphere, tendrilHalo;
@@ -740,7 +750,7 @@ let clearArmed = false, clearTimer;
 
             document.addEventListener('pointerlockchange', () => {
                 isLocked = (document.pointerLockElement === container);
-                if (!isLocked) resetInputs();
+                if (!isLocked) isRotatingItem = false;
             });
             window.addEventListener('blur', resetInputs);
 
@@ -749,6 +759,7 @@ let clearArmed = false, clearTimer;
                 if (isRotatingItem) { rotateGrabbed(e.movementX, e.movementY); return; } // camera locked while rotating
                 const sensitivity = 0.002;
                 cameraRotation.y -= e.movementX * sensitivity;
+                yawGrabbed(-e.movementX * sensitivity);
                 cameraRotation.x -= e.movementY * sensitivity;
                 const maxPitch = Math.PI / 2 - 0.05;
                 cameraRotation.x = Math.max(-maxPitch, Math.min(maxPitch, cameraRotation.x));
@@ -779,7 +790,7 @@ let clearArmed = false, clearTimer;
             });
 
             document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space' && isLocked) e.preventDefault();
+                if (e.code === 'Space' && gameStarted) e.preventDefault();
                 const held = isGrabbing && grabbedBody;
 
                 switch (e.code) {
@@ -790,14 +801,15 @@ let clearArmed = false, clearTimer;
                     case 'ShiftLeft':
                     case 'ShiftRight': isSprinting = true; break;
                     case 'KeyC': isCrouching = true; break;
-                    case 'KeyF': if (isLocked) isRotatingItem = true; break;
+                    case 'KeyR': if (isLocked) isRotatingItem = true; break;
                     case 'KeyP': if (!e.repeat && held) deleteGrabbedItem(); break;
                     case 'KeyO': if (!e.repeat && held) { anchorItem(grabbedBody); showToast('Anchored'); } break;
                     case 'KeyI': if (!e.repeat && held) { unanchorItem(grabbedBody); showToast('Unanchored'); } break;
                     case 'KeyL': if (!e.repeat && held) chainItem(grabbedBody); break;
                     case 'KeyK': if (!e.repeat && held) unchainItem(grabbedBody); break;
                     case 'KeyJ': if (!e.repeat && held) paintItem(grabbedBody); break;
-                    case 'KeyB': if (!e.repeat && isLocked) detonateHeldOrAimed(); break;
+                    case 'KeyQ': if (!e.repeat && isLocked) detonateHeldOrAimed(); break;
+                    case 'KeyN': if (!e.repeat) { const now = performance.now(); if (now - lastN < 400) { setGrapple(!grapplePull); lastN = 0; } else lastN = now; } break;
                     case 'KeyM': if (!e.repeat && gameStarted) teleportToSpawn(); break;
                     case 'KeyE':
                         if (isLocked) {
@@ -811,7 +823,7 @@ let clearArmed = false, clearTimer;
                         }
                         break;
                     case 'Space':
-                        if (isLocked && !isSpawnerOpen && grounded && !e.repeat) {
+                        if (gameStarted && grounded && !e.repeat) {
                             playerBody.velocity.y = 16;
                             grounded = false;
                             lastJump = performance.now();
@@ -829,7 +841,7 @@ let clearArmed = false, clearTimer;
                     case 'ShiftLeft':
                     case 'ShiftRight': isSprinting = false; break;
                     case 'KeyC': isCrouching = false; break;
-                    case 'KeyF': isRotatingItem = false; break;
+                    case 'KeyR': isRotatingItem = false; break;
                 }
             });
         }
@@ -914,16 +926,56 @@ let clearArmed = false, clearTimer;
             let n = 0;
             touching.forEach(o => {
                 if (glueLinks.some(l => (l.a === body && l.b === o) || (l.a === o && l.b === body))) return;
-                const c = new CANNON.LockConstraint(body, o);
+                const A = o.mass > body.mass ? o : body, B = A === body ? o : body;   // heavier body leads
+                const c = new CANNON.LockConstraint(A, B);
                 c.collideConnected = false;
                 world.addConstraint(c);
-                glueLinks.push({ a: body, b: o, c });
+                const qa = bq(A).invert();
+                glueLinks.push({ a: A, b: B, c, rp: bp(B).sub(bp(A)).applyQuaternion(qa), rq: qa.clone().multiply(bq(B)) });
                 n++;
             });
             if (getAssembly(body).some(b => activeAnchors.has(b))) anchorItem(body);
             refreshGrabGroup();
             if (n) soundFX.playLatch();
             showToast(n ? 'Chained to ' + n + ' touching item' + (n > 1 ? 's' : '') : 'Nothing touching to chain');
+        }
+
+// Keeps glued pieces rigid: after each step, pull followers back onto their stored pose and match velocity
+        function stabilizeGlue() {
+            glueLinks.forEach(l => {
+                const a = l.a, b = l.b;
+                if (b.type === CANNON.Body.STATIC) return;
+                const qa = bq(a), dp = l.rp.clone().applyQuaternion(qa);
+                const tp = bp(a).add(dp), tq = qa.clone().multiply(l.rq);
+                const np = bp(b).lerp(tp, 0.6), nq = bq(b).slerp(tq, 0.6);
+                b.position.set(np.x, np.y, np.z);
+                b.quaternion.set(nq.x, nq.y, nq.z, nq.w);
+                const w = new THREE.Vector3(a.angularVelocity.x, a.angularVelocity.y, a.angularVelocity.z), wr = w.clone().cross(dp);
+                b.velocity.x += (a.velocity.x + wr.x - b.velocity.x) * 0.5;
+                b.velocity.y += (a.velocity.y + wr.y - b.velocity.y) * 0.5;
+                b.velocity.z += (a.velocity.z + wr.z - b.velocity.z) * 0.5;
+                b.angularVelocity.x += (w.x - b.angularVelocity.x) * 0.5;
+                b.angularVelocity.y += (w.y - b.angularVelocity.y) * 0.5;
+                b.angularVelocity.z += (w.z - b.angularVelocity.z) * 0.5;
+            });
+        }
+
+        function yawGrabbed(a) {
+            if (!grabbedBody || isStaticGrab || !grabGroup.length || isRotatingItem) return;
+            if (getAssembly(grabbedBody).some(b => activeAnchors.has(b))) return;
+            const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), a);
+            grabGroup.forEach(m => {
+                const nq = q.clone().multiply(bq(m.body));
+                m.body.quaternion.set(nq.x, nq.y, nq.z, nq.w);
+                m.off.applyQuaternion(q);
+            });
+        }
+
+        function setGrapple(on) {
+            grapplePull = on;
+            document.getElementById('grapple-state').textContent = on ? 'ON' : 'OFF';
+            document.getElementById('grapple-btn').classList.toggle('on', on);
+            showToast('Grapple pull ' + (on ? 'ON' : 'OFF'));
         }
 
         function removeLinks(b) {
@@ -982,63 +1034,94 @@ let clearArmed = false, clearTimer;
             }
         }
 
-// Exact convex collider built from the same geometry that is drawn
+// Convex collider from the drawn geometry. Coplanar triangles are merged into single polygon faces:
+        // far fewer SAT axes (less lag) and proper flat contact faces (no clipping / bouncing on the ground).
         function convexFromGeos(geos) {
-            const map = new Map(), pts = [], faces = [];
+            const map = new Map(), pts = [], tris = [];
             geos.forEach(geo => {
                 const pa = geo.attributes.position, ix = geo.index, n = ix ? ix.count : pa.count;
                 const vid = i => {
                     const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i), k = x.toFixed(4) + ',' + y.toFixed(4) + ',' + z.toFixed(4);
-                    if (!map.has(k)) { map.set(k, pts.length); pts.push(new CANNON.Vec3(x, y, z)); }
+                    if (!map.has(k)) { map.set(k, pts.length); pts.push(new THREE.Vector3(x, y, z)); }
                     return map.get(k);
                 };
-                for (let i = 0; i < n; i += 3) {
-                    const a = vid(ix ? ix.getX(i) : i), b = vid(ix ? ix.getX(i + 1) : i + 1), c = vid(ix ? ix.getX(i + 2) : i + 2);
-                    if (a === b || b === c || a === c) continue;
-                    if (pts[b].vsub(pts[a]).cross(pts[c].vsub(pts[b])).norm() < 1e-6) continue;
-                    faces.push([a, b, c]);
-                }
+                for (let i = 0; i < n; i += 3) tris.push([vid(ix ? ix.getX(i) : i), vid(ix ? ix.getX(i + 1) : i + 1), vid(ix ? ix.getX(i + 2) : i + 2)]);
             });
-            const cen = new CANNON.Vec3(); pts.forEach(q => cen.vadd(q, cen)); cen.scale(1 / pts.length, cen);
-            faces.forEach(f => {   // wind every face outward
-                const nr = pts[f[1]].vsub(pts[f[0]]).cross(pts[f[2]].vsub(pts[f[1]]));
-                if (nr.dot(pts[f[0]].vsub(cen)) < 0) f.reverse();
+            const cen = new THREE.Vector3(); pts.forEach(q => cen.add(q)); cen.multiplyScalar(1 / pts.length);
+            const planes = [];
+            tris.forEach(t => {
+                const A = pts[t[0]], B = pts[t[1]], C = pts[t[2]];
+                const nr = new THREE.Vector3().subVectors(B, A).cross(new THREE.Vector3().subVectors(C, A));
+                if (nr.length() < 1e-6) return;
+                nr.normalize();
+                if (nr.dot(A.clone().sub(cen)) < 0) nr.negate();
+                const d = nr.dot(A);
+                let pl = planes.find(q => q.n.dot(nr) > 0.9995 && Math.abs(q.d - d) < 0.01);
+                if (!pl) { pl = { n: nr, d, v: new Set() }; planes.push(pl); }
+                t.forEach(i => pl.v.add(i));
             });
-            return new CANNON.ConvexPolyhedron(pts, faces);
+            const faces = [];
+            planes.forEach(pl => {
+                const ids = [...pl.v];
+                const c = new THREE.Vector3(); ids.forEach(i => c.add(pts[i])); c.multiplyScalar(1 / ids.length);
+                const u = new THREE.Vector3(Math.abs(pl.n.x) < 0.9 ? 1 : 0, Math.abs(pl.n.x) < 0.9 ? 0 : 1, 0).cross(pl.n).normalize();
+                const v = new THREE.Vector3().crossVectors(pl.n, u);
+// 2D convex hull of this plane's points (drops cap-centre / interior / collinear points), CCW about the outward normal
+                const P = ids.map(id => { const d = pts[id].clone().sub(c); return { id, x: d.dot(u), y: d.dot(v) }; }).sort((a, b) => a.x - b.x || a.y - b.y);
+                const cr = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+                const lo = [], up = [];
+                P.forEach(q => { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 1e-7) lo.pop(); lo.push(q); });
+                for (let k = P.length - 1; k >= 0; k--) { const q = P[k]; while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 1e-7) up.pop(); up.push(q); }
+                lo.pop(); up.pop();
+                const poly = lo.concat(up).map(q => q.id);
+                if (poly.length >= 3) faces.push(poly);
+            });
+            return new CANNON.ConvexPolyhedron(pts.map(q => new CANNON.Vec3(q.x, q.y, q.z)), faces);
         }
 
-        const extrude = (shape, depth) => { const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 16 }); g.center(); return g; };
+        const extrude = (shape, depth) => { const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 10 }); g.center(); return g; };
 
+        // Sizes: cube-like shapes fit in the cube (S), round ones fit in the ball (R)
+        const S = 1.2, R = 0.8, PAL_T = 0.35;
         const SHAPES = {
-            cone: () => ({ color: 0xf97316, mass: 8, parts: [{ geo: new THREE.ConeGeometry(0.9, 1.8, 10) }] }),
-            pyramid: () => ({ color: 0xeab308, mass: 12, flat: true, parts: [{ geo: new THREE.ConeGeometry(1.2, 1.6, 4).rotateY(Math.PI / 4) }] }),
-            cylinder: () => ({ color: 0x8b5cf6, mass: 12, parts: [{ geo: new THREE.CylinderGeometry(0.6, 0.6, 1.6, 18) }] }),
-            wheel: () => ({ color: 0x1f2937, mass: 14, parts: [
-                { geo: new THREE.CylinderGeometry(1, 1, 0.5, 22).rotateX(Math.PI / 2) },
-                { geo: new THREE.CylinderGeometry(0.45, 0.45, 0.56, 14).rotateX(Math.PI / 2), color: 0xcbd5e1, hull: false, keep: true }] }),
-            ramp: () => ({ color: 0x22c55e, mass: 20, flat: true, parts: [{ geo: extrude(new THREE.Shape().moveTo(0, 0).lineTo(4, 0).lineTo(4, 1.6), 3) }] }),
-            semicircle: () => ({ color: 0xec4899, mass: 15, parts: [{ geo: extrude(new THREE.Shape().moveTo(-1, 0).absarc(0, 0, 1, Math.PI, 0, true), 3) }] }),
-            dome: () => ({ color: 0x14b8a6, mass: 10, parts: [
-                { geo: new THREE.SphereGeometry(1, 18, 8, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, -0.3, 0) },
-                { geo: new THREE.CircleGeometry(1, 18).rotateX(Math.PI / 2).translate(0, -0.3, 0), double: true }] }),
-            prism: () => ({ color: 0xef4444, mass: 10, flat: true, parts: [{ geo: extrude(new THREE.Shape().moveTo(-0.8, 0).lineTo(0.8, 0).lineTo(0, 1.4), 2) }] }),
-            explosive: () => ({ color: 0xdc2626, mass: 12, explosive: true, parts: [
-                { geo: new THREE.CylinderGeometry(0.55, 0.55, 1.2, 18) },
-                { geo: new THREE.CylinderGeometry(0.58, 0.58, 0.14, 18).translate(0, 0.3, 0), color: 0xfacc15, hull: false, keep: true },
-                { geo: new THREE.CylinderGeometry(0.58, 0.58, 0.14, 18).translate(0, -0.3, 0), color: 0xfacc15, hull: false, keep: true },
-                { geo: new THREE.CylinderGeometry(0.2, 0.2, 0.18, 10).translate(0, 0.66, 0), color: 0x1f2937, hull: false, keep: true }] }),
-            plank: () => ({ color: 0xd97706, mass: 12, parts: [{ geo: new THREE.BoxGeometry(5, 0.25, 0.9) }], boxes: [{ half: [2.5, 0.125, 0.45], off: [0, 0, 0] }] }),
+            cone: () => ({ color: 0xf97316, mass: 8, parts: [{ geo: new THREE.ConeGeometry(R, S, 12) }] }),
+            pyramid: () => ({ color: 0xeab308, mass: 8, flat: true, parts: [{ geo: new THREE.ConeGeometry(S / Math.SQRT2, S, 4).rotateY(Math.PI / 4) }] }),
+            cylinder: () => ({ color: 0x8b5cf6, mass: 10, parts: [{ geo: new THREE.CylinderGeometry(R, R, S, 14) }] }),
+            wheel: () => ({ color: 0x1f2937, mass: 10, parts: [
+                { geo: new THREE.CylinderGeometry(R, R, 0.6, 16).rotateX(Math.PI / 2) },
+                { geo: new THREE.CylinderGeometry(R * 0.55, R * 0.55, 0.66, 12).rotateX(Math.PI / 2), color: 0xcbd5e1, hull: false, keep: true }] }),
+            ramp: () => ({ color: 0x22c55e, mass: 8, flat: true, parts: [{ geo: extrude(new THREE.Shape().moveTo(0, 0).lineTo(S, 0).lineTo(S, S), S) }] }),
+            semicircle: () => ({ color: 0xec4899, mass: 10, parts: [{ geo: extrude(new THREE.Shape().moveTo(-R, 0).absarc(0, 0, R, Math.PI, 0, true), 2 * R) }] }),
+            dome: () => ({ color: 0x14b8a6, mass: 8, parts: [
+                { geo: new THREE.SphereGeometry(R, 16, 6, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, -R * 0.35, 0), hullGeo: new THREE.SphereGeometry(R, 10, 3, 0, Math.PI * 2, 0, Math.PI / 2).translate(0, -R * 0.35, 0) },
+                { geo: new THREE.CircleGeometry(R, 16).rotateX(Math.PI / 2).translate(0, -R * 0.35, 0), hullGeo: new THREE.CircleGeometry(R, 10).rotateX(Math.PI / 2).translate(0, -R * 0.35, 0), double: true }] }),
+            prism: () => ({ color: 0xef4444, mass: 8, flat: true, parts: [{ geo: extrude(new THREE.Shape().moveTo(-S / 2, 0).lineTo(S / 2, 0).lineTo(0, S), S) }] }),
+            plank: () => ({ color: 0xd97706, mass: 10, parts: [{ geo: new THREE.BoxGeometry(4.8, 0.2, S / 2) }], boxes: [{ half: [2.4, 0.1, S / 4], off: [0, 0, 0] }] }),  // lying flat: pallet-length (4.8), 0.6 wide, 0.2 thin
             stairs: () => {
-                const parts = [], boxes = [], n = 5, w = 3, dp = 0.9, st = 0.4;
+                const parts = [], boxes = [], n = 4, st = S / n;
                 for (let i = 0; i < n; i++) {
-                    const h = (i + 1) * st, y = h / 2 - (n * st) / 2, z = i * dp + dp / 2 - (n * dp) / 2;
-                    parts.push({ geo: new THREE.BoxGeometry(w, h, dp).translate(0, y, z) });
-                    boxes.push({ half: [w / 2, h / 2, dp / 2], off: [0, y, z] });
+                    const h = (i + 1) * st, y = h / 2 - S / 2, z = i * st + st / 2 - S / 2;
+                    parts.push({ geo: new THREE.BoxGeometry(S, h, st).translate(0, y, z) });
+                    boxes.push({ half: [S / 2, h / 2, st / 2], off: [0, y, z] });
                 }
-                return { color: 0x94a3b8, mass: 30, parts, boxes };
+                return { color: 0x94a3b8, mass: 10, parts, boxes };
+            },
+            explosive: () => ({ color: 0xdc2626, mass: 12, explosive: true, parts: [
+                { geo: new THREE.CylinderGeometry(0.6, 0.6, S, 14) },
+                { geo: new THREE.CylinderGeometry(0.63, 0.63, 0.14, 14).translate(0, 0.3, 0), color: 0xfacc15, hull: false, keep: true },
+                { geo: new THREE.CylinderGeometry(0.63, 0.63, 0.14, 14).translate(0, -0.3, 0), color: 0xfacc15, hull: false, keep: true },
+                { geo: new THREE.CylinderGeometry(0.3, 0.3, 0.06, 14).translate(0, 0.62, 0), color: 0x1f2937, hull: false, keep: true },
+                { geo: new THREE.CylinderGeometry(0.2, 0.22, 0.14, 12).translate(0, 0.7, 0), color: 0xff3b30, hull: false, keep: true, button: true }] }),
+            box: () => {   // hollow, open top, thick walls; 3x the cube
+                const W = S * 3, T = S / 2, parts = [], boxes = [];
+                const add = (w, h, d, x, y, z) => { parts.push({ geo: new THREE.BoxGeometry(w, h, d).translate(x, y, z) }); boxes.push({ half: [w / 2, h / 2, d / 2], off: [x, y, z] }); };
+                add(W, T, W, 0, -W / 2 + T / 2, 0);
+                add(T, W, W, W / 2 - T / 2, 0, 0); add(T, W, W, -W / 2 + T / 2, 0, 0);
+                add(W - 2 * T, W, T, 0, 0, W / 2 - T / 2); add(W - 2 * T, W, T, 0, 0, -W / 2 + T / 2);
+                return { color: 0xa78bfa, mass: 40, parts, boxes };
             }
         };
-        const SHAPE_NAMES = { explosive: 'Explosive', cone: 'Cone', pyramid: 'Pyramid', cylinder: 'Cylinder', wheel: 'Wheel', ramp: 'Ramp', stairs: 'Stairs', semicircle: 'Semicircle', dome: 'Dome', prism: 'Prism', plank: 'Plank' };
+        const SHAPE_NAMES = { box: 'Box', explosive: 'Explosive', cone: 'Cone', pyramid: 'Pyramid', cylinder: 'Cylinder', wheel: 'Wheel', ramp: 'Ramp', stairs: 'Stairs', semicircle: 'Semicircle', dome: 'Dome', prism: 'Prism', plank: 'Plank' };
 
         function createShape(key, pos) {
             const d = SHAPES[key](), root = new THREE.Group();
@@ -1046,9 +1129,9 @@ let clearArmed = false, clearTimer;
             const hull = [];
             d.parts.forEach(pt => {
                 const m = new THREE.Mesh(pt.geo, new THREE.MeshStandardMaterial({ color: pt.color || d.color, roughness: 0.55, flatShading: !!d.flat, side: pt.double ? THREE.DoubleSide : THREE.FrontSide }));
-                m.castShadow = true; m.receiveShadow = true; m.userData.keepColor = !!pt.keep;
+                m.castShadow = true; m.receiveShadow = true; m.userData.keepColor = !!pt.keep; m.userData.isButton = !!pt.button;
                 root.add(m);
-                if (pt.hull !== false) hull.push(pt.geo);
+                if (pt.hull !== false) hull.push(pt.hullGeo || pt.geo);
             });
             if (d.boxes) d.boxes.forEach(b => body.addShape(new CANNON.Box(new CANNON.Vec3(...b.half)), new CANNON.Vec3(...b.off)));
             else body.addShape(convexFromGeos(hull));
@@ -1107,6 +1190,13 @@ if (d.explosive) {
                 f.ring.scale.setScalar(1 + e * 18); f.ring.material.opacity = 0.7 * (1 - k);
             }
         }
+function armFuse(body) {
+            if (!body || !body.userData.explosive || body.userData.fused) return;
+            body.userData.fused = true;
+            const btn = body.userData.mesh.children.find(c => c.userData.isButton);
+            if (btn) { btn.material.color.setHex(0x7f1d1d); btn.material.emissive.setHex(0xff2200); btn.scale.y = 0.4; btn.position.y -= 0.04; }
+            setTimeout(() => boomQueue.push(body), 1750);   // hidden fuse
+        }
         const BLAST_RADIUS = 18;
         function detonate(body) {
             if (!body || body.userData.exploded) return;
@@ -1145,7 +1235,7 @@ if (d.explosive) {
                 while (o && !(o.userData && o.userData.body)) o = o.parent;
                 if (o && o.userData.body.userData.explosive) t = o.userData.body;
             }
-            if (t) detonate(t); else showToast('No explosive held or aimed at');
+            if (t) detonate(t); else showToast('Nothing to interact with');
         }
 
         function createPhysicsCube(pos) {
@@ -1303,6 +1393,7 @@ if (d.explosive) {
                 }
 
                 if (targetBody) {
+                    if (intersects[0].object.userData && intersects[0].object.userData.isButton) armFuse(targetBody);
                     grabbedBody = targetBody;
                     grabbedStaticMesh = null;
                     isGrabbing = true;
@@ -1367,7 +1458,13 @@ if (d.explosive) {
             if (isStaticGrab && grabbedStaticMesh) {
                 const envTargetPos = grabbedStaticMesh.userData.targetPoint;
                 updateWormTendril(handPos, envTargetPos, dt);
-                                return;
+                if (grapplePull) {
+                    const pull = envTargetPos.clone().sub(handPos).multiplyScalar(6);
+                    playerBody.velocity.x += pull.x * 0.02;
+                    playerBody.velocity.y += pull.y * 0.02;
+                    playerBody.velocity.z += pull.z * 0.02;
+                }
+                return;
             }
 
             const g = grabbedBody;
@@ -1419,7 +1516,7 @@ if (d.explosive) {
             if (isSprinting) speed = sprintSpeed;
             if (isCrouching) speed = crouchSpeed;
 
-            const active = isLocked && !isSpawnerOpen;
+            const active = gameStarted;
             const input = new THREE.Vector3(0, 0, 0);
             if (active) {
                 if (moveForward) input.z -= 1;
@@ -1432,9 +1529,10 @@ if (d.explosive) {
             const moveDir = input.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y);
             const v = playerBody.velocity;
 
-            if (grounded && !hasInput && !groundVel && groundNY < 0.95) {
+            const onGround = grounded && !(grapplePull && isStaticGrab);
+            if (onGround && !hasInput && !groundVel && groundNY < 0.95) {
                 v.x = 0; v.z = 0; if (v.y < 0) v.y = 0;   // stand still on slopes instead of sliding
-            } else if (grounded) {
+            } else if (onGround) {
                 // Smooth accel/decel, relative to whatever we're standing on (e.g. a flying pallet)
                 const rx = groundVel ? groundVel.x : 0, rz = groundVel ? groundVel.z : 0;
                 const k = 1 - Math.exp(-(hasInput ? 14 : 16) * delta);
@@ -1462,6 +1560,7 @@ if (d.explosive) {
             const delta = Math.min(clock.getDelta(), 0.1);
 
             world.step(1 / 60, delta, 3);
+            stabilizeGlue();
             while (boomQueue.length) detonate(boomQueue.pop());
 
             // Anything that falls into the ocean is deleted
