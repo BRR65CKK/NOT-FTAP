@@ -77,6 +77,13 @@
         .toggle b{padding:2px 12px;border-radius:999px;border:2px solid var(--ink);background:#cbd5e1;font-size:12px;}
         .toggle.on b{background:var(--leaf);}
         .toggle:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink);}
+        #controls{position:absolute;left:18px;top:74px;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+        #tool-hud{position:absolute;right:18px;bottom:18px;z-index:10;pointer-events:none;display:none;text-align:center;padding:8px 12px;background:rgba(238,250,255,.94);border:2px solid var(--ink);border-radius:14px;box-shadow:3px 3px 0 var(--ink);}
+        #tool-hud .tt{font-size:12px;font-weight:700;letter-spacing:1px;margin-bottom:5px;}
+        #tool-hud .pills{display:flex;gap:5px;justify-content:center;}
+        #tool-hud .pill{padding:2px 10px;border:2px solid var(--ink);border-radius:999px;font-size:12px;font-weight:600;background:#fff;opacity:.55;}
+        #tool-hud .pill.on{background:var(--sun);opacity:1;}
+        #tool-hud .tt2{margin-top:5px;font-size:12px;font-weight:600;}
         .item.boom{background:#fff1ee;border-style:dashed;}
         .sec{margin:6px 0 0;font-size:15px;font-weight:700;}
         .shapes{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:4px;}
@@ -126,7 +133,7 @@
                 <div><span class="key">P</span> Delete held</div>
                 <div><span class="key">M</span> To spawn</div>
                 <div><span class="key">J</span> Paint held item</div>
-                <div><span class="key">Q</span> Interact</div>
+                <div><span class="key">Q</span> Interact / tool mode</div>
                 <div><span class="key">Z</span> Hold / drop gun</div>
                 <div><span class="key">E</span> Item spawner</div>
                 <div style="grid-column:1/-1"><span class="key">N</span><span class="key">N</span> Grapple pull</div>
@@ -140,11 +147,8 @@
         <span class="ico"><i class="fa-solid fa-hand"></i></span>
         <span>Holding: <b id="target-info">None</b></span>
     </div>
-    <div id="hotbar">
-        <div class="hb"><span class="key">LMB</span> Grab</div><div class="hb"><span class="key">RMB</span> Fling</div><div class="hb"><span class="key">R</span> Rotate</div>
-        <div class="hb"><span class="key">O</span><span class="key">I</span> Anchor</div><div class="hb"><span class="key">L</span><span class="key">K</span> Chain</div><div class="hb"><span class="key">P</span> Delete</div><div class="hb"><span class="key">J</span> Paint</div><div class="hb"><span class="key">Q</span> Interact</div><div class="hb"><span class="key">Z</span> Hold</div>
-        <div class="hb"><span class="key">M</span> To spawn</div><div class="hb"><span class="key">E</span> Items</div>
-    </div>
+    <div id="controls"></div>
+    <div id="tool-hud"></div>
 
     <!-- Object Spawner Drawer -->
     <div id="spawner-drawer" class="sticker">
@@ -168,6 +172,18 @@
                                     <button onclick="spawnObject('windgun'); this.blur()" class="item">
                 <div class="tile" style="background:#99f6e4"><i class="fa-solid fa-wind"></i></div>
                 <div><div class="t">Wind Gun</div><div class="d">Z hold · click or Q: wind gust</div></div>
+            </button>
+            <button onclick="spawnObject('bird'); this.blur()" class="item">
+                <div class="tile" style="background:#7dd3fc"><i class="fa-solid fa-dove"></i></div>
+                <div><div class="t">Bird</div><div class="d">Flies off if you get close</div></div>
+            </button>
+            <button onclick="spawnObject('drumstick'); this.blur()" class="item">
+                <div class="tile" style="background:#fdba74"><i class="fa-solid fa-drumstick-bite"></i></div>
+                <div><div class="t">Drumstick</div><div class="d">Walks, stares, follows you</div></div>
+            </button>
+            <button onclick="spawnObject('anvil'); this.blur()" class="item">
+                <div class="tile" style="background:#94a3b8"><i class="fa-solid fa-weight-hanging"></i></div>
+                <div><div class="t">Anvil</div><div class="d">Super heavy</div></div>
             </button>
             <button onclick="spawnObject('bazooka'); this.blur()" class="item">
                 <div class="tile" style="background:#bef264"><i class="fa-solid fa-rocket"></i></div>
@@ -199,6 +215,9 @@
             <label class="vol"><span>Background</span><input id="range-amb" type="range" min="0" max="100" oninput="setVol('amb', this.value)"><b id="vol-amb"></b></label>
             <label class="vol"><span>SFX</span><input id="range-sfx" type="range" min="0" max="100" oninput="setVol('sfx', this.value)"><b id="vol-sfx"></b></label>
             <div class="sec">Gameplay</div>
+            <label class="vol"><span>Move speed</span><input id="range-speed" type="range" min="50" max="150" oninput="setSpeed(this.value)"><b id="vol-speed"></b></label>
+            <button id="birds-btn" onclick="setBirds(!birdSpawns); this.blur()" class="toggle" style="width:100%;margin-top:8px"><span><i class="fa-solid fa-dove" style="margin-right:8px"></i>Natural birds</span><b id="birds-state">ON</b></button>
+            <button id="hints-btn" onclick="setHints(!showHints); this.blur()" class="toggle" style="width:100%;margin-top:8px"><span><i class="fa-solid fa-keyboard" style="margin-right:8px"></i>Control hints</span><b id="hints-state">ON</b></button>
             <button id="grapple-btn" onclick="setGrapple(!grapplePull); this.blur()" class="toggle" style="width:100%;margin-top:8px"><span><i class="fa-solid fa-spider" style="margin-right:8px"></i>Grapple pull <small style="opacity:.6">(N N)</small></span><b id="grapple-state">OFF</b></button>
         </div>
         <div class="actions">
@@ -297,11 +316,33 @@ playEquip(on) {
                 this.burst(0.7, 500, 3500, 0.35, 0.02, 'bandpass');
                 this.blip('sawtooth', 220, 900, 0.5, 0.07, 0.05);
             }
-            playRocketBlast() {
+            playRocketBlast(k = 1) {
                 if (!this.init()) return;
-                this.burst(1.2, 2400, 80, 0.85);
-                this.blip('sine', 85, 20, 0.9, 0.75);
+                const m = Math.min(1.2, 0.55 + 0.45 * k);
+                this.burst(0.8 + 0.4 * k, 2400, 80, 0.85 * m);
+                this.blip('sine', 85 - 15 * k, 20, 0.6 + 0.3 * k, 0.75 * m);
                 for (let i = 0; i < 6; i++) this.burst(0.05 + Math.random() * 0.1, 3200, 700, 0.22, 0.12 + i * 0.12, 'bandpass');
+            }
+playMode(i) { if (!this.init()) return; this.blip('square', 500 + i * 200, 520 + i * 200, 0.05, 0.1); this.blip('sine', 900 + i * 250, 1000 + i * 250, 0.08, 0.1, 0.05); }
+            playModeToggle(on) {
+                if (!this.init()) return;
+                if (on) { this.blip('triangle', 500, 900, 0.08, 0.14); this.blip('triangle', 900, 1400, 0.1, 0.14, 0.08); }
+                else { this.blip('triangle', 1200, 700, 0.08, 0.14); this.blip('triangle', 700, 400, 0.1, 0.14, 0.08); }
+            }
+            playGrenade() { if (!this.init()) return; this.blip('sine', 220, 80, 0.14, 0.4); this.burst(0.15, 1800, 400, 0.2); }
+playBirdCall(vol = 1, pitch = 1) {
+                if (!this.init() || vol < 0.04) return;
+                const n = 2 + Math.floor(Math.random() * 3), b = (2400 + Math.random() * 1800) * pitch;
+                for (let i = 0; i < n; i++) this.blip('sine', b * (0.9 + Math.random() * 0.3), b * (Math.random() < 0.5 ? 0.7 : 1.35), 0.07 + Math.random() * 0.05, 0.12 * vol, i * 0.11);
+            }
+            playFlap(vol = 1) { if (!this.init() || vol < 0.04) return; this.burst(0.18, 2600, 700, 0.14 * vol, 0, 'bandpass'); this.burst(0.18, 2400, 700, 0.12 * vol, 0.14, 'bandpass'); }
+            playGobble(vol = 1, voice = 1) {
+                if (!this.init() || vol < 0.04) return;
+                const n = 2 + Math.floor(Math.random() * 3);
+                for (let i = 0; i < n; i++) {
+                    const b = (380 + Math.random() * 120) * voice;
+                    setTimeout(() => this.vocal({ pitch: [[0, b * 1.2], [0.5, b], [1, b * 0.7]], dur: 0.16 + Math.random() * 0.06, vowels: ['u', 'a'], vol: 0.8 * vol, vib: 30, vibDepth: 120, rough: 0.9, formant: 1.1, attack: 0.01 }), i * 150);
+                }
             }
             playSpawn() { if (!this.init()) return; this.blip('sine', 280, 720, 0.12, 0.2); this.blip('triangle', 560, 1100, 0.09, 0.1, 0.05); }
             playGrapple(on) {
@@ -420,7 +461,9 @@ playEquip(on) {
         let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
         let isSprinting = false, isCrouching = false;
         let canJump = true;
-        let walkSpeed = 20.0, sprintSpeed = 30.0, crouchSpeed = 10.0;
+        let walkSpeed = 14.0, sprintSpeed = 26.0, crouchSpeed = 7.0;
+        let birdSpawns = true, speedMul = 1, showHints = true, lmbHeld = false, qTimer = null, qLong = false, hoverBody = null, hoverEnv = false;
+        try { const pr = JSON.parse(localStorage.getItem('ftapPrefs') || '{}'); if (pr.speed) speedMul = pr.speed; if (pr.hints === false) showHints = false; if (pr.birds === false) birdSpawns = false; } catch (e) {}
 
         // Grabbing System State
         let grabbedBody = null;
@@ -565,15 +608,20 @@ let hoverTick = 0;
         const hoverRay = new THREE.Raycaster();
         function updateHover() {
             const el = document.getElementById('crosshair');
-            if (!isLocked || isGrabbing || heldTool) { el.classList.remove('hover', 'hover-env'); return; }
+            if (!isLocked || isGrabbing || heldTool) { el.classList.remove('hover', 'hover-env'); hoverBody = null; hoverEnv = false; return; }
             if (++hoverTick % 3) return;
             camera.updateMatrixWorld(true);
             hoverRay.setFromCamera(new THREE.Vector2(0, 0), camera);
             hoverRay.far = maxGrabDistance;
-            const item = hoverRay.intersectObjects(meshes, true).length > 0;
+            const ih = hoverRay.intersectObjects(meshes, true)[0];
+            let o = ih && ih.object;
+            while (o && !(o.userData && o.userData.body)) o = o.parent;
+            hoverBody = o ? o.userData.body : null;
+            const item = !!ih;
             const env = !item && hoverRay.intersectObjects(staticMeshes, true).length > 0;
             el.classList.toggle('hover', item);
             el.classList.toggle('hover-env', env);
+            hoverEnv = env;
         }
 
         function updateAtmosphere(dt) {
@@ -841,7 +889,7 @@ let hoverTick = 0;
 
         function resetInputs() {
             moveForward = moveBackward = moveLeft = moveRight = false;
-            isSprinting = isCrouching = isRotatingItem = false;
+            isSprinting = isCrouching = isRotatingItem = lmbHeld = false;
         }
 
         function rotateGrabbed(dx, dy) {
@@ -897,6 +945,7 @@ let clearArmed = false, clearTimer;
                     startMenu.style.display = 'none';
                     gameStarted = true;
                     soundFX.startAmbient();
+                    initCreatures();
                     requestPointerLockSafe();
                 });
             }
@@ -936,6 +985,7 @@ let clearArmed = false, clearTimer;
             document.addEventListener('mousedown', (e) => {
                 if (!isLocked) return;
                 if (e.button === 0) {
+                    lmbHeld = true;
                     if (heldTool) fireHeld(); else if (isGrabbing) releaseGrab(); else attemptGrab();
                 } else if (e.button === 2) {
                     if (isGrabbing && grabbedBody) {
@@ -955,6 +1005,8 @@ let clearArmed = false, clearTimer;
                     }
                 }
             });
+
+            document.addEventListener('mouseup', e => { if (e.button === 0) lmbHeld = false; });
 
             document.addEventListener('wheel', (e) => {
                 if (!isGrabbing) return;
@@ -981,7 +1033,12 @@ let clearArmed = false, clearTimer;
                     case 'KeyL': if (!e.repeat && held) chainItem(grabbedBody); break;
                     case 'KeyK': if (!e.repeat && held) unchainItem(grabbedBody); break;
                     case 'KeyJ': if (!e.repeat && held) paintItem(grabbedBody); break;
-                    case 'KeyQ': if (!e.repeat && isLocked) detonateHeldOrAimed(); break;
+                    case 'KeyQ':
+                        if (!e.repeat && isLocked) {
+                            if (heldTool) { qLong = false; clearTimeout(qTimer); qTimer = setTimeout(() => { qLong = true; qTimer = null; toggleSpecial(); }, 450); }   // tap = next mode, hold = alt fire type
+                            else detonateHeldOrAimed();   // not holding it: just activate it
+                        }
+                        break;
                     case 'KeyZ': if (!e.repeat && isLocked) toggleHold(); break;
                     case 'KeyN': if (!e.repeat) { const now = performance.now(); if (now - lastN < 400) { setGrapple(!grapplePull); lastN = 0; } else lastN = now; } break;
                     case 'KeyM': if (!e.repeat && gameStarted) teleportToSpawn(); break;
@@ -1018,6 +1075,7 @@ let clearArmed = false, clearTimer;
                     case 'ShiftLeft':
                     case 'ShiftRight': isSprinting = false; break;
                     case 'KeyC': isCrouching = false; break;
+                    case 'KeyQ': if (qTimer) { clearTimeout(qTimer); qTimer = null; if (heldTool) cycleMode(); } break;
                     case 'KeyR': isRotatingItem = false; break;
                 }
             });
@@ -1055,7 +1113,7 @@ let clearArmed = false, clearTimer;
         }
 
         function setGrabLock(on) {
-            grabGroup.forEach(m => { m.body.fixedRotation = on; m.body.updateMassProperties(); });
+            grabGroup.forEach(m => { m.body.fixedRotation = on || !!m.body.userData.keepFixed; m.body.updateMassProperties(); });
         }
 
         function refreshGrabGroup() {
@@ -1148,7 +1206,22 @@ let clearArmed = false, clearTimer;
             });
         }
 
-function setVol(k, v) {
+function savePrefs() { try { localStorage.setItem('ftapPrefs', JSON.stringify({ speed: speedMul, hints: showHints, birds: birdSpawns })); } catch (e) {} }
+        function setSpeed(v) { speedMul = v / 100; document.getElementById('vol-speed').textContent = Math.round(v) + '%'; savePrefs(); }
+        function setHints(on) {
+            showHints = on;
+            document.getElementById('hints-state').textContent = on ? 'ON' : 'OFF';
+            document.getElementById('hints-btn').classList.toggle('on', on);
+            document.getElementById('controls').style.display = on ? '' : 'none';
+            savePrefs();
+        }
+function setBirds(on) {
+            birdSpawns = on;
+            document.getElementById('birds-state').textContent = on ? 'ON' : 'OFF';
+            document.getElementById('birds-btn').classList.toggle('on', on);
+            savePrefs();
+        }
+        function setVol(k, v) {
             soundFX.setVolume(k, v / 100);
             document.getElementById('vol-' + k).textContent = Math.round(v) + '%';
         }
@@ -1159,6 +1232,10 @@ function setVol(k, v) {
             sfx('playSettings', on);
         }
         function initSettingsUI() {
+            document.getElementById('range-speed').value = Math.round(speedMul * 100);
+            document.getElementById('vol-speed').textContent = Math.round(speedMul * 100) + '%';
+            setHints(showHints);
+            setBirds(birdSpawns);
             ['master', 'amb', 'sfx'].forEach(k => {
                 const v = Math.round(soundFX.vol[k] * 100);
                 document.getElementById('range-' + k).value = v;
@@ -1228,6 +1305,8 @@ function setVol(k, v) {
                 createPhysicsCube(spawnPos);
             } else if (type === 'ball') {
                 createPhysicsBall(spawnPos);
+            } else if (type === 'bird' || type === 'drumstick') {
+                createCreature(type, spawnPos);
             } else if (SHAPES[type]) {
                 createShape(type, spawnPos);
             }
@@ -1309,6 +1388,13 @@ function setVol(k, v) {
                 { geo: new THREE.BoxGeometry(0.18, 0.5, 0.22).translate(0, -0.45, 0.15), color: 0x1f2937, keep: true },
                 { geo: new THREE.BoxGeometry(0.08, 0.14, 0.3).translate(0, 0.3, -0.4), color: 0x1f2937, keep: true }],
                 boxes: [{ half: [0.28, 0.28, 1.2], off: [0, 0, 0] }, { half: [0.1, 0.25, 0.12], off: [0, -0.45, 0.15] }] }),
+            anvil: () => ({ color: 0x4b5563, mass: 900, parts: [
+                { geo: new THREE.BoxGeometry(1.0, 0.22, 0.7).translate(0, -0.39, 0) },
+                { geo: new THREE.BoxGeometry(0.5, 0.38, 0.42).translate(0, -0.09, 0) },
+                { geo: new THREE.BoxGeometry(1.2, 0.28, 0.62).translate(0, 0.24, 0) },
+                { geo: new THREE.ConeGeometry(0.24, 0.5, 10).rotateZ(-Math.PI / 2).translate(0.85, 0.24, 0) }],
+                boxes: [{ half: [0.5, 0.11, 0.35], off: [0, -0.39, 0] }, { half: [0.25, 0.19, 0.21], off: [0, -0.09, 0] },
+                    { half: [0.6, 0.14, 0.31], off: [0, 0.24, 0] }, { half: [0.22, 0.12, 0.2], off: [0.82, 0.22, 0] }] }),
             plank: () => ({ color: 0xd97706, mass: 10, parts: [{ geo: new THREE.BoxGeometry(4.8, 0.2, S / 2) }], boxes: [{ half: [2.4, 0.1, S / 4], off: [0, 0, 0] }] }),  // lying flat: pallet-length (4.8), 0.6 wide, 0.2 thin
             stairs: () => {
                 const parts = [], boxes = [], n = 4, st = S / n;
@@ -1334,7 +1420,7 @@ function setVol(k, v) {
                 return { color: 0xa78bfa, mass: 150, parts, boxes };
             }
         };
-        const SHAPE_NAMES = { bazooka: 'Bazooka', windgun: 'Wind Gun', box: 'Box', explosive: 'Explosive', cone: 'Cone', pyramid: 'Pyramid', cylinder: 'Cylinder', wheel: 'Wheel', ramp: 'Ramp', stairs: 'Stairs', semicircle: 'Semicircle', dome: 'Dome', prism: 'Prism', plank: 'Plank' };
+        const SHAPE_NAMES = { anvil: 'Anvil', bazooka: 'Bazooka', windgun: 'Wind Gun', box: 'Box', explosive: 'Explosive', cone: 'Cone', pyramid: 'Pyramid', cylinder: 'Cylinder', wheel: 'Wheel', ramp: 'Ramp', stairs: 'Stairs', semicircle: 'Semicircle', dome: 'Dome', prism: 'Prism', plank: 'Plank' };
 
         function createShape(key, pos) {
             const d = SHAPES[key](), root = new THREE.Group();
@@ -1358,6 +1444,7 @@ function setVol(k, v) {
                 body.userData.holdable = true; body.userData.shapeKey = key;
                 if (d.windgun) body.userData.windgun = true;
                 if (d.bazooka) body.userData.bazooka = true;
+                body.userData.toolState = d.windgun ? { mode: 2, cont: false } : { size: 1, grenade: false };   // saved on the item
                 body.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), cameraRotation.y);
                 root.quaternion.set(body.quaternion.x, body.quaternion.y, body.quaternion.z, body.quaternion.w);
             }
@@ -1426,7 +1513,9 @@ let lastImpactAny = 0;
             sfx('playImpact', v, a.mass, bp(a).distanceTo(bp(playerBody)));
         }
 
-        const gusts = [], rockets = [], fxs = [], windRay = new THREE.Raycaster();
+        const gusts = [], rockets = [], grenades = [], fxs = [], windSfx = {}, windRay = new THREE.Raycaster();
+        const BLAST_SIZES = [{ R: 7, dv: 50, k: 0.6 }, { R: 12, dv: 80, k: 1 }, { R: 18, dv: 110, k: 1.5 }];
+        const GREN_SPEED = 34, GREN_UP = 7, GREN_G = 40;
         const GUST_RANGE = 36, GUST_TAN = 0.7, GUST_TIME = 0.5;
         const SPHERE_GEO = new THREE.SphereGeometry(1, 14, 10), SPARK_GEO = new THREE.BoxGeometry(0.14, 0.14, 0.14);
         let heldTool = null;
@@ -1454,11 +1543,11 @@ let lastImpactAny = 0;
             const dir = grabbedBody === body ? camera.getWorldDirection(new THREE.Vector3()) : new THREE.Vector3(0, 0, -1).applyQuaternion(bq(body));
             return { dir, origin: bp(body).addScaledVector(dir, body.userData.bazooka ? 1.5 : 0.9) };
         }
-        function fireWind(body) { if (!cool(body.userData, 800)) return; const a = aimFrom(body); fireWindAt(a.origin, a.dir, body); }
-        function fireRocket(body) { if (!cool(body.userData, 1200)) return; const a = aimFrom(body); fireRocketAt(a.origin, a.dir, body); }
+        function fireWind(body) { if (!cool(body.userData, 800)) return; const a = aimFrom(body); fireWindAt(a.origin, a.dir, body, body.userData.toolState); }
+        function fireRocket(body) { if (!cool(body.userData, 1200)) return; const a = aimFrom(body); fireBazookaAt(a.origin, a.dir, body, body.userData.toolState); }
 
         // ---------- wind gun: a big pushing gust ----------
-        function fireWindAt(origin, dir, src) {
+        function fireWindAt(origin, dir, src, st, cont) {
             let range = GUST_RANGE, blow = null;   // walls stop the wind and blow back at you
             windRay.set(origin, dir); windRay.far = GUST_RANGE;
             const wall = windRay.intersectObjects(staticMeshes, true)[0];
@@ -1469,18 +1558,18 @@ let lastImpactAny = 0;
             const grp = new THREE.Group();
             grp.position.copy(origin); grp.lookAt(origin.clone().add(dir));   // local +Z = wind direction
             const streaks = [];
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < (cont ? 14 : 40); i++) {
                 const m = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 2), new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.6, depthWrite: false }));
                 grp.add(m);
                 streaks.push({ m, u: Math.random(), sp: 40 + Math.random() * 30, a: Math.random() * 6.28, fr: Math.sqrt(Math.random()) * 0.9 });
             }
             scene.add(grp);
-            gusts.push({ grp, streaks, origin, dir, range, blow, t: 0, src });
-            sfx('playWind');
+            gusts.push({ grp, streaks, origin, dir, range, blow, t: 0, src, mode: st ? st.mode : 2, dur: cont ? 0.22 : GUST_TIME, pw: cont ? 0.5 : 1 });
+            if (!cont || cool(windSfx, 350)) sfx('playWind');
         }
 
         // ---------- bazooka: rocket + big blast ----------
-        function fireRocketAt(origin, dir, src) {
+        function fireRocketAt(origin, dir, src, sz) {
             const grp = new THREE.Group();
             const st = (g, c) => { const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: c, roughness: 0.5 })); grp.add(m); return m; };
             st(new THREE.CylinderGeometry(0.13, 0.13, 0.8, 10).rotateX(Math.PI / 2), 0xe5e7eb);
@@ -1489,12 +1578,12 @@ let lastImpactAny = 0;
             const flame = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.7, 8).rotateX(-Math.PI / 2).translate(0, 0, -0.75), new THREE.MeshBasicMaterial({ color: 0xffa020 }));
             grp.add(flame);
             grp.position.copy(origin); grp.lookAt(origin.clone().add(dir)); scene.add(grp);
-            rockets.push({ grp, flame, pos: origin.clone(), dir: dir.clone(), speed: 58, t: 0, trail: 0, src });
+            rockets.push({ grp, flame, pos: origin.clone(), dir: dir.clone(), speed: 58, t: 0, trail: 0, src, sz });
             puff(origin, 0.5, 0.8, 0xd1d5db, 0.6);
             sfx('playRocketLaunch');
         }
-        function rocketBlast(P) {
-            const R = 12;
+        function rocketBlast(P, sz = BLAST_SIZES[1]) {
+            const R = sz.R;
             physicsBodies.forEach(b => {
                 if (b.type !== CANNON.Body.DYNAMIC) return;
                 const d = bp(b).sub(P), dist = d.length();
@@ -1502,14 +1591,14 @@ let lastImpactAny = 0;
                 if (b.userData.explosive) setTimeout(() => boomQueue.push(b), 80 + dist * 8);
                 const f = 1 - dist / R;
                 d.y += 0.3 * Math.max(dist, 1); d.normalize();
-                const dv = 80 * f * Math.min(1.5, Math.sqrt(12 / Math.max(b.mass, 3)));
+                const dv = sz.dv * f * Math.min(1.5, Math.sqrt(12 / Math.max(b.mass, 3)));
                 b.velocity.x += d.x * dv; b.velocity.y += d.y * dv; b.velocity.z += d.z * dv; b.wakeUp();
             });
             const pd = bp(playerBody).sub(P), pdist = pd.length();
             if (pdist < R) {
                 const f = 1 - pdist / R;
                 pd.y += 0.5 * Math.max(pdist, 1); pd.normalize();
-                playerBody.velocity.x += pd.x * 70 * f; playerBody.velocity.y += pd.y * 70 * f; playerBody.velocity.z += pd.z * 70 * f;
+                playerBody.velocity.x += pd.x * sz.dv * 0.875 * f; playerBody.velocity.y += pd.y * sz.dv * 0.875 * f; playerBody.velocity.z += pd.z * sz.dv * 0.875 * f;
                 grounded = false; lastJump = performance.now();
             }
             const mk = (color, op) => { const m = new THREE.Mesh(SPHERE_GEO, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false })); m.position.copy(P); scene.add(m); return m; };
@@ -1518,9 +1607,9 @@ let lastImpactAny = 0;
             ring.position.copy(P); ring.rotation.x = -Math.PI / 2; scene.add(ring);
             addFX(0.55, k => {
                 const e = 1 - Math.pow(1 - k, 3);
-                core.scale.setScalar(1 + e * 6); core.material.opacity = 0.95 * (1 - k);
-                shell.scale.setScalar(1.5 + e * 9); shell.material.opacity = 0.6 * (1 - k);
-                ring.scale.setScalar(1 + e * 24); ring.material.opacity = 0.7 * (1 - k);
+                core.scale.setScalar((1 + e * 6) * sz.k); core.material.opacity = 0.95 * (1 - k);
+                shell.scale.setScalar((1.5 + e * 9) * sz.k); shell.material.opacity = 0.6 * (1 - k);
+                ring.scale.setScalar((1 + e * 24) * sz.k); ring.material.opacity = 0.7 * (1 - k);
             }, () => { scene.remove(core, shell, ring); core.material.dispose(); shell.material.dispose(); ring.geometry.dispose(); ring.material.dispose(); });
             for (let i = 0; i < 10; i++) puff(P.clone().add(new THREE.Vector3((Math.random() - 0.5) * 4, Math.random() * 2, (Math.random() - 0.5) * 4)), 0.9 + Math.random() * 0.8, 1.2 + Math.random() * 0.7, 0x3f3f46, 0.55);
             for (let i = 0; i < 16; i++) {
@@ -1530,7 +1619,7 @@ let lastImpactAny = 0;
                 addFX(0.7 + Math.random() * 0.4, (k, dt) => { v.y -= 30 * dt; m.position.addScaledVector(v, dt); m.rotation.x += dt * 8; m.scale.setScalar(1 - k * 0.8); },
                     () => { scene.remove(m); m.material.dispose(); });
             }
-            sfx('playRocketBlast');
+            sfx('playRocketBlast', sz.k);
         }
 
         function updateRockets(dt) {
@@ -1557,7 +1646,7 @@ let lastImpactAny = 0;
                 }
                 if (!hit && r.t > 0.25) { const c = bp(playerBody), cp = near(c); if (cp.distanceTo(c) < 1.0) hit = cp; }
                 if (hit || r.t > 4) {
-                    if (hit) rocketBlast(hit);
+                    if (hit) rocketBlast(hit, r.sz);
                     scene.remove(r.grp);
                     r.grp.traverse(m => { if (m.geometry) m.geometry.dispose(); if (m.material) m.material.dispose(); });
                     rockets.splice(i, 1);
@@ -1582,7 +1671,7 @@ let lastImpactAny = 0;
             camera.add(vm);
             if (grabbedBody === body) releaseGrab();
             removeBody(body);
-            heldTool = { key, name: SHAPE_NAMES[key], color, vm, base: vm.position.clone(), kick: 0, phase: 0 };
+            heldTool = { key, name: SHAPE_NAMES[key], color, vm, base: vm.position.clone(), kick: 0, phase: 0, st: body.userData.toolState, contT: 0 };
             document.getElementById('crosshair').classList.add('armed');
             document.getElementById('target-info').textContent = heldTool.name + ' (equipped)';
             sfx('playEquip', true);
@@ -1594,6 +1683,7 @@ let lastImpactAny = 0;
             heldTool = null;
             const dir = camera.getWorldDirection(new THREE.Vector3());
             const body = createShape(t.key, camera.position.clone().addScaledVector(dir, 1.8));
+            body.userData.toolState = t.st;
             if (t.color !== null) body.userData.mesh.children.forEach(c => { if (!c.userData.keepColor) c.material.color.setHex(t.color); });
             body.velocity.set(dir.x * 5, dir.y * 5 + 2, dir.z * 5);
             document.getElementById('crosshair').classList.remove('armed');
@@ -1612,29 +1702,160 @@ let lastImpactAny = 0;
             }
             if (b) equipTool(b); else showToast('Grab or aim at a holdable item (Wind Gun, Bazooka)');
         }
-        function fireHeld() {
-            const t = heldTool;
+        function heldOrigin() {
             const dir = camera.getWorldDirection(new THREE.Vector3());
             const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-            const origin = camera.position.clone().addScaledVector(dir, 1.2).addScaledVector(right, 0.3).addScaledVector(up, -0.2);
-            if (t.key === 'windgun') { if (!cool(t, 800)) return; fireWindAt(origin, dir, null); }
-            else { if (!cool(t, 1200)) return; fireRocketAt(origin, dir, null); }
+            return { dir, origin: camera.position.clone().addScaledVector(dir, 1.2).addScaledVector(right, 0.3).addScaledVector(up, -0.2) };
+        }
+        function fireHeld() {
+            const t = heldTool, a = heldOrigin();
+            if (t.key === 'windgun') { if (t.st.cont || !cool(t, 800)) return; fireWindAt(a.origin, a.dir, null, t.st, false); }
+            else { if (!cool(t, t.st.grenade ? 900 : 1200)) return; fireBazookaAt(a.origin, a.dir, null, t.st); }
             t.kick = 1;
         }
-        function updateHeld(dt) {
+        function cycleMode() {
             const t = heldTool; if (!t) return;
+            if (t.key === 'windgun') { t.st.mode = (t.st.mode + 1) % 3; sfx('playMode', t.st.mode); }
+            else { t.st.size = (t.st.size + 1) % 3; sfx('playMode', t.st.size); }
+        }
+        function toggleSpecial() {
+            const t = heldTool; if (!t) return;
+            if (t.key === 'windgun') { t.st.cont = !t.st.cont; sfx('playModeToggle', t.st.cont); }
+            else { t.st.grenade = !t.st.grenade; sfx('playModeToggle', t.st.grenade); }
+        }
+        function fireBazookaAt(origin, dir, src, st) {
+            const sz = BLAST_SIZES[st.size];
+            if (st.grenade) fireGrenadeAt(origin, dir, src, sz); else fireRocketAt(origin, dir, src, sz);
+        }
+
+        // ---------- grenades (bazooka alt-fire) + aim indicator ----------
+        function fireGrenadeAt(origin, dir, src, sz) {
+            const grp = new THREE.Group();
+            grp.add(new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), new THREE.MeshStandardMaterial({ color: 0x3f6212, roughness: 0.6 })));
+            const band = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.04, 6, 14), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
+            grp.add(band);
+            grp.position.copy(origin); scene.add(grp);
+            grenades.push({ grp, pos: origin.clone(), v: dir.clone().multiplyScalar(GREN_SPEED).add(new THREE.Vector3(0, GREN_UP, 0)), t: 0, sz, src });
+            sfx('playGrenade');
+        }
+        function updateGrenades(dt) {
+            for (let i = grenades.length - 1; i >= 0; i--) {
+                const r = grenades[i], prev = r.pos.clone();
+                r.v.y -= GREN_G * dt;
+                const step = r.v.length() * dt;
+                r.pos.addScaledVector(r.v, dt); r.t += dt;
+                r.grp.position.copy(r.pos); r.grp.rotation.x += dt * 9; r.grp.rotation.z += dt * 6;
+                let hit = null;
+                const d = r.pos.clone().sub(prev).normalize();
+                windRay.set(prev, d); windRay.far = step + 0.3;
+                const sh = windRay.intersectObjects(staticMeshes, true)[0];
+                if (sh) hit = sh.point.clone();
+                const seg = r.pos.clone().sub(prev), l2 = Math.max(seg.lengthSq(), 1e-6);
+                const near = c => prev.clone().addScaledVector(seg, Math.max(0, Math.min(1, c.clone().sub(prev).dot(seg) / l2)));
+                if (!hit) {
+                    const skip = r.t < 0.25 && r.src ? new Set(getAssembly(r.src)) : null;
+                    for (const b of physicsBodies) {
+                        if (skip && skip.has(b)) continue;
+                        const c = bp(b), cp = near(c);
+                        if (cp.distanceTo(c) < 0.3 + (b.boundingRadius || 1) * 0.85) { hit = cp; break; }
+                    }
+                }
+                if (!hit && r.t > 0.3) { const c = bp(playerBody), cp = near(c); if (cp.distanceTo(c) < 0.9) hit = cp; }
+                if (hit || r.t > 4) {
+                    rocketBlast(hit || r.pos.clone(), r.sz);
+                    scene.remove(r.grp);
+                    r.grp.traverse(m => { if (m.geometry) m.geometry.dispose(); if (m.material) m.material.dispose(); });
+                    grenades.splice(i, 1);
+                }
+            }
+        }
+        const aimViz = new THREE.Group(), aimDots = [];
+        let aimRing = null;
+        function updateAim(on) {
+            if (!on) { aimViz.visible = false; return; }
+            if (!aimDots.length) {
+                for (let i = 0; i < 24; i++) { const m = new THREE.Mesh(SPHERE_GEO, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 })); m.scale.setScalar(0.09); aimViz.add(m); aimDots.push(m); }
+                aimRing = new THREE.Mesh(new THREE.RingGeometry(0.88, 1, 36), new THREE.MeshBasicMaterial({ color: 0xff9a3c, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false }));
+                aimRing.rotation.x = -Math.PI / 2; aimViz.add(aimRing); scene.add(aimViz);
+            }
+            const a = heldOrigin(), p = a.origin.clone(), v = a.dir.clone().multiplyScalar(GREN_SPEED).add(new THREE.Vector3(0, GREN_UP, 0));
+            let landing = null;
+            for (let i = 0; i < 24; i++) {
+                aimDots[i].visible = !landing; aimDots[i].position.copy(p);
+                if (landing) continue;
+                const next = p.clone().addScaledVector(v, 0.08); v.y -= GREN_G * 0.08;
+                const seg = next.clone().sub(p), len = seg.length();
+                windRay.set(p, seg.normalize()); windRay.far = len;
+                const h = windRay.intersectObjects(staticMeshes, true)[0];
+                if (h) landing = h.point.clone(); else p.copy(next);
+            }
+            aimRing.visible = !!landing;
+            if (landing) { aimRing.position.copy(landing); aimRing.position.y += 0.06; aimRing.scale.setScalar(BLAST_SIZES[heldTool.st.size].R); }
+            aimViz.visible = true;
+        }
+
+        // ---------- contextual HUD ----------
+        let uiSig = '', toolSig = '';
+        function currentTool() {
+            if (heldTool) return { key: heldTool.key, st: heldTool.st };
+            if (grabbedBody && grabbedBody.userData.holdable) return { key: grabbedBody.userData.shapeKey, st: grabbedBody.userData.toolState };
+            return null;
+        }
+        function controlRows() {
+            const L = [];
+            if (heldTool) {
+                const wg = heldTool.key === 'windgun', st = heldTool.st;
+                L.push(['LMB', wg ? (st.cont ? 'Hold: continuous gust' : 'Fire gust') : (st.grenade ? 'Lob grenade' : 'Fire rocket')],
+                    ['Q', wg ? 'Next mode' : 'Next blast size'], ['Q hold', wg ? 'Burst / continuous' : 'Rocket / grenade'], ['Z', 'Drop']);
+            } else if (isGrabbing && grabbedBody) {
+                const u = grabbedBody.userData;
+                L.push(['LMB', 'Release'], ['RMB', 'Fling'], ['Wheel', 'Push / pull'], ['R', 'Rotate (hold)'], ['O', 'Anchor'], ['I', 'Unanchor'], ['L', 'Chain'], ['K', 'Unchain'], ['J', 'Paint'], ['P', 'Delete']);
+                if (u.holdable) L.push(['Z', 'Hold'], ['Q', 'Use']);
+                if (u.explosive) L.push(['Q', 'Detonate']);
+            } else if (isGrabbing) L.push(['LMB', 'Release']);
+            else if (hoverBody) {
+                const u = hoverBody.userData;
+                L.push(['LMB', u.explosive ? 'Grab (button = fuse)' : 'Grab']);
+                if (u.holdable) L.push(['Z', 'Hold'], ['Q', 'Use']);
+                if (u.explosive) L.push(['Q', 'Detonate']);
+            } else if (hoverEnv) L.push(['LMB', 'Grab']);
+            L.push(['E', 'Items'], ['M', 'To spawn']);
+            return L;
+        }
+        function updateUI() {
+            if (showHints) {
+                const rows = controlRows(), sig = JSON.stringify(rows);
+                if (sig !== uiSig) { uiSig = sig; document.getElementById('controls').innerHTML = rows.map(([k, l]) => '<div class="hb"><span class="key">' + k + '</span>' + l + '</div>').join(''); }
+            }
+            const ct = currentTool(), el = document.getElementById('tool-hud'), sig = ct ? ct.key + JSON.stringify(ct.st) : '';
+            if (sig === toolSig) return;
+            toolSig = sig;
+            if (!ct) { el.style.display = 'none'; return; }
+            const wg = ct.key === 'windgun', names = wg ? ['Boost', 'Push', 'Mix'] : ['Small', 'Medium', 'Large'], cur = wg ? ct.st.mode : ct.st.size;
+            el.innerHTML = '<div class="tt">' + (wg ? 'WIND GUN' : 'BAZOOKA') + '</div><div class="pills">' + names.map((n, i) => '<span class="pill' + (i === cur ? ' on' : '') + '">' + n + '</span>').join('') +
+                '</div><div class="tt2">' + (wg ? (ct.st.cont ? 'Continuous' : 'Burst') : (ct.st.grenade ? 'Grenade' : 'Rocket')) + '</div>';
+            el.style.display = 'block';
+        }
+
+        function updateHeld(dt) {
+            const t = heldTool; if (!t) { if (aimViz.visible) aimViz.visible = false; return; }
             const sp = Math.hypot(playerBody.velocity.x, playerBody.velocity.z) * (grounded ? 1 : 0.2);
             t.phase += dt * (4 + sp * 0.25);
             const amp = Math.min(1, sp / 20);
             t.vm.position.set(t.base.x + Math.sin(t.phase) * 0.012 * amp, t.base.y + Math.abs(Math.cos(t.phase)) * 0.012 * amp - t.kick * 0.03, t.base.z + t.kick * 0.2);
             t.vm.rotation.x = t.kick * 0.2;
             t.kick = Math.max(0, t.kick - dt * 5);
+            if (t.key === 'windgun' && t.st.cont && lmbHeld && isLocked) {   // continuous gust while LMB is held
+                t.contT -= dt;
+                if (t.contT <= 0) { t.contT = 0.12; const a = heldOrigin(); fireWindAt(a.origin, a.dir, null, t.st, true); t.kick = Math.max(t.kick, 0.35); }
+            }
+            updateAim(t.key === 'bazooka' && t.st.grenade);
         }
 
         function updateWind(dt) {
             for (let i = gusts.length - 1; i >= 0; i--) {
                 const g = gusts[i]; g.t += dt;
-                const life = g.t / (GUST_TIME + 0.3);
+                const life = g.t / (g.dur + 0.3);
                 if (life >= 1) {
                     scene.remove(g.grp);
                     g.grp.traverse(m => { if (m.geometry) { m.geometry.dispose(); m.material.dispose(); } });
@@ -1646,9 +1867,9 @@ let lastImpactAny = 0;
                     st.m.position.set(Math.cos(st.a) * r, Math.sin(st.a) * r, z);
                     st.m.material.opacity = 0.6 * (1 - life) * (1 - st.u * 0.7);
                 });
-                if (g.t > GUST_TIME) continue;
+                if (g.t > g.dur) continue;
                 // continuous push on everything inside the cone
-                const skip = g.src ? new Set(getAssembly(g.src)) : new Set(), fade = 1 - (g.t / GUST_TIME) * 0.5;
+                const skip = g.src ? new Set(getAssembly(g.src)) : new Set(), fade = 1 - (g.t / g.dur) * 0.5;
                 const inCone = (pos, br) => {
                     const rel = pos.clone().sub(g.origin), along = rel.dot(g.dir);
                     if (along < 0 || along > g.range + br) return null;
@@ -1657,29 +1878,261 @@ let lastImpactAny = 0;
                     return { f: Math.pow(Math.max(0, 1 - along / g.range), 0.6) * fade, out: lat.normalize() };
                 };
                 physicsBodies.forEach(b => {
-                    if (b.type !== CANNON.Body.DYNAMIC || skip.has(b)) return;
+                    if (g.mode === 0 || b.type !== CANNON.Body.DYNAMIC || skip.has(b)) return;
                     const h = inCone(bp(b), b.boundingRadius || 1);
                     if (!h) return;
-                    const acc = 260 * h.f * Math.min(1.5, Math.sqrt(12 / Math.max(b.mass, 3))) * dt;
+                    const acc = 260 * g.pw * h.f * Math.min(1.5, Math.sqrt(12 / Math.max(b.mass, 3))) * dt;
                     b.velocity.x += (g.dir.x + h.out.x * 0.15) * acc; b.velocity.y += (g.dir.y + h.out.y * 0.15) * acc; b.velocity.z += (g.dir.z + h.out.z * 0.15) * acc;
                     b.wakeUp();
                 });
-                const hp = inCone(bp(playerBody), 0.5);
+                const hp = g.mode === 1 ? null : inCone(bp(playerBody), 0.5);
                 if (hp) {
-                    const acc = 180 * hp.f * dt;
+                    const acc = 180 * g.pw * hp.f * dt;
                     playerBody.velocity.x += g.dir.x * acc; playerBody.velocity.y += g.dir.y * acc; playerBody.velocity.z += g.dir.z * acc;
                     grounded = false; lastJump = performance.now();
                 }
-                if (g.blow) {   // wind hitting a surface right next to you bounces back and shoves you away (aim down = lift)
+                if (g.blow && g.mode !== 1) {   // wind hitting a surface right next to you bounces back and shoves you away (aim down = lift)
                     const pdist = bp(playerBody).distanceTo(g.blow.p);
                     if (pdist < 14) {
-                        const acc = 300 * (1 - pdist / 14) * fade * dt;
+                        const acc = 300 * g.pw * (1 - pdist / 14) * fade * dt;
                         playerBody.velocity.x += g.blow.n.x * acc; playerBody.velocity.y += g.blow.n.y * acc; playerBody.velocity.z += g.blow.n.z * acc;
                         grounded = false; lastJump = performance.now();
                     }
                 }
             }
-            updateRockets(dt); updateFXs(dt); updateHeld(dt);
+            updateRockets(dt); updateGrenades(dt); updateFXs(dt); updateHeld(dt); updateUI(); updateCreatures(dt);
+        }
+
+        // ================= creatures: birds + walking drumsticks =================
+        const creatures = [];
+        const CYL1 = new THREE.CylinderGeometry(1, 1, 1, 8), BOX1 = new THREE.BoxGeometry(1, 1, 1), CONE1 = new THREE.ConeGeometry(1, 1, 8);
+        const rnd = (a, b) => a + Math.random() * (b - a), pickOf = a => a[Math.floor(Math.random() * a.length)];
+        const angDiff = (a, b) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+        const BIRD_COLS = [0x8b5a2b, 0x6b7280, 0x2563eb, 0xdc2626, 0x16a34a, 0xeab308, 0xf472b6, 0x1f2937, 0xf5f5f4, 0xa855f7, 0x0ea5e9];
+        const EYE_COLS = [0x111827, 0xf59e0b, 0x22c55e, 0xef4444, 0x3b82f6, 0xa855f7, 0x06b6d4, 0xfacc15];
+        const BEAK_COLS = [0xf59e0b, 0xf97316, 0xfacc15, 0x1f2937, 0xef4444];
+        const MEAT_COLS = [0xb45309, 0xc2410c, 0x92400e, 0xd97706, 0xa16207, 0x9a3412, 0xe08a3c];
+        const BONE_COLS = [0xf5f5dc, 0xfef3c7, 0xe7e5e4];
+        function cm(geo, color, keep) {
+            const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.75 }));
+            m.castShadow = true; m.userData.keepColor = !!keep; return m;
+        }
+        function put(parent, m, x, y, z, sx, sy, sz) { if (sy == null) sy = sx; if (sz == null) sz = sy; m.position.set(x, y, z); m.scale.set(sx, sy, sz); parent.add(m); return m; }
+
+        function buildBird() {
+            const root = new THREE.Group(), vis = new THREE.Group(); root.add(vis);
+            const col = pickOf(BIRD_COLS), dark = new THREE.Color(col).offsetHSL(0, 0, -0.12).getHex(), eye = pickOf(EYE_COLS), beak = pickOf(BEAK_COLS);
+            put(vis, cm(SPHERE_GEO, col), 0, 0.3, 0.03, 0.2, 0.18, 0.3);
+            const head = new THREE.Group(); head.position.set(0, 0.42, -0.2); vis.add(head);
+            put(head, cm(SPHERE_GEO, col), 0, 0.08, -0.04, 0.11);
+            const bk = put(head, cm(CONE1, beak, true), 0, 0.07, -0.16, 0.045, 0.13, 0.045); bk.rotation.x = -Math.PI / 2;
+            [-1, 1].forEach(sd => {
+                put(head, cm(SPHERE_GEO, eye, true), sd * 0.092, 0.105, -0.065, 0.048);
+                put(head, cm(SPHERE_GEO, 0x000000, true), sd * 0.118, 0.11, -0.073, 0.025);
+            });
+            const tail = put(vis, cm(BOX1, dark), 0, 0.34, 0.33, 0.1, 0.03, 0.2); tail.rotation.x = -0.3;
+            const mkWing = sd => { const g = new THREE.Group(); g.position.set(sd * 0.17, 0.36, 0.02); put(g, cm(BOX1, dark), sd * 0.11, 0, 0.02, 0.22, 0.025, 0.28); vis.add(g); return g; };
+            const mkLeg = sd => { const g = new THREE.Group(); g.position.set(sd * 0.06, 0.15, 0.02); put(g, cm(CYL1, beak, true), 0, -0.07, 0, 0.012, 0.14, 0.012); vis.add(g); return g; };
+            return { root, vis, head, wingL: mkWing(-1), wingR: mkWing(1), legL: mkLeg(-1), legR: mkLeg(1) };
+        }
+        function buildDrumstick() {
+            const root = new THREE.Group(), vis = new THREE.Group(); root.add(vis);
+            const meat = pickOf(MEAT_COLS), bone = pickOf(BONE_COLS), eye = pickOf(EYE_COLS), legCol = new THREE.Color(meat).offsetHSL(0, 0, -0.06).getHex();
+            put(vis, cm(SPHERE_GEO, meat), 0, 0.62, 0, 0.34, 0.44, 0.34);                 // egg-shaped meat
+            put(vis, cm(CYL1, bone, true), 0, 1.27, 0, 0.075, 0.5, 0.075);                // bone sticking up
+            put(vis, cm(SPHERE_GEO, bone, true), -0.065, 1.53, 0, 0.1); put(vis, cm(SPHERE_GEO, bone, true), 0.065, 1.53, 0, 0.1);
+            put(vis, cm(SPHERE_GEO, 0xf3e5c8, true), 0, 0.48, -0.27, 0.2, 0.22, 0.1);   // cream belly patch on the front, below the eyes
+            const eyes = [], eyeMeshes = [];   // big friendly eyes, a bit apart on the front, half sunk in
+            const em = (m, sd) => { eyeMeshes.push({ m, sy: m.scale.y }); return m; };
+            [-1, 1].forEach(sd => {
+                const white = em(put(vis, cm(SPHERE_GEO, 0xffffff, true), sd * 0.12, 0.78, -0.26, 0.078), sd);
+                const iris = em(put(vis, cm(SPHERE_GEO, eye, true), sd * 0.133, 0.792, -0.296, 0.056), sd);
+                const pupil = em(put(vis, cm(SPHERE_GEO, 0x000000, true), sd * 0.14, 0.798, -0.316, 0.034), sd);
+                em(put(vis, cm(SPHERE_GEO, 0xffffff, true), sd * 0.15, 0.822, -0.33, 0.013), sd);
+                eyes.push({ iris, pupil, ix: iris.position.x, iy: iris.position.y, px: pupil.position.x, py: pupil.position.y });
+            });
+            const mkLeg = sd => { const g = new THREE.Group(); g.position.set(sd * 0.12, 0.22, 0); put(g, cm(BOX1, legCol, true), 0, -0.11, 0, 0.1, 0.22, 0.1); put(g, cm(BOX1, legCol, true), 0, -0.2, -0.04, 0.13, 0.05, 0.2); vis.add(g); return g; };
+            return { root, vis, legL: mkLeg(-1), legR: mkLeg(1), eyes, eyeMeshes };
+        }
+
+let _creatureMat = null;
+        function creatureMat() {   // frictionless, so the AI's walking speed isn't eaten by ground friction
+            if (!_creatureMat) { _creatureMat = new CANNON.Material('creature'); world.addContactMaterial(new CANNON.ContactMaterial(_creatureMat, defaultMaterial, { friction: 0, restitution: 0 })); }
+            return _creatureMat;
+        }
+        function createCreature(type, pos, natural) {
+            const bird = type === 'bird', s = rnd(bird ? 0.4 : 0.45, bird ? 0.95 : 1.0);
+            const parts = bird ? buildBird() : buildDrumstick();
+            const r = (bird ? 0.3 : 0.42) * s;
+            parts.vis.scale.setScalar(s); parts.vis.position.y = -r;
+            const body = new CANNON.Body({ mass: bird ? Math.max(0.3, 0.6 * s * s * s) : 3 * s * s * s, material: creatureMat(), fixedRotation: true, linearDamping: 0.05 });
+            body.addShape(new CANNON.Sphere(r));
+            body.position.set(pos.x, pos.y + (pos.y < r ? r : 0), pos.z);
+            parts.root.position.copy(body.position);
+            body.userData = { isSpawnedObject: true, keepFixed: true, mesh: parts.root };
+            parts.root.userData.body = body; parts.root.userData.name = bird ? 'Bird' : 'Drumstick';
+            const high = bird && pos.y > 3;
+            body.userData.cr = { type, s, r, parts, natural: !!natural, state: high ? 'fly' : 'idle', t: rnd(0.5, 2.5), heading: rnd(0, 6.28), vh: 0, spd: rnd(1, 2),
+                alt: high ? Math.max(pos.y, 8) : 0, flyT: rnd(6, 12), turn: 0, turnT: 1, fleeing: false, landT: 0, stun: 0, peck: false, phase: rnd(0, 6), last: { x: 0, y: 0, z: 0 },
+                callT: rnd(3, 12), callCool: 0, voice: 1.5 - s * 0.7, followR: bird ? 0 : rnd(11, 18), sp: rnd(7, 10) };
+            cr_init(body.userData.cr);
+            world.addBody(body); scene.add(parts.root); meshes.push(parts.root); physicsBodies.push(body); creatures.push(body);
+            return body;
+        }
+        function cr_init(cr) { cr.vh = cr.heading; }
+
+        let spawnT = 4;
+        function initCreatures() {
+            if (!birdSpawns) return;
+            for (let i = 0; i < 3; i++) naturalSpawnOne(true);
+        }
+        function naturalSpawnOne(any) {
+            const pl = playerBody.position, ang = rnd(0, 6.28), rad = rnd(15, 65), x = Math.cos(ang) * rad, z = Math.sin(ang) * rad;
+            if (!any && Math.hypot(x - pl.x, z - pl.z) < 20) return;
+            if (Math.hypot(x - 3, z + 7) < 8 || Math.hypot(x + 3, z + 7) < 8) return;
+            createCreature('bird', { x, y: Math.random() < 0.35 ? rnd(10, 20) : 0.6, z }, true);
+        }
+        function naturalSpawn(dt) {
+            if (!gameStarted || !birdSpawns) return;
+            spawnT -= dt;
+            if (spawnT > 0) return;
+            spawnT = rnd(7, 14);
+            if (creatures.filter(b => b.userData.cr.type === 'bird').length >= 9) return;
+            naturalSpawnOne(false);
+        }
+
+        function steerCenter(cr, p, lim, dt) {
+            if (Math.hypot(p.x, p.z) > lim) cr.heading += angDiff(cr.heading, Math.atan2(p.x, p.z)) * Math.min(1, 2.5 * dt);
+        }
+        function startFlee(body, cr, dxp, dzp) {
+            cr.state = 'fly'; cr.fleeing = true; cr.heading = Math.atan2(dxp, dzp) + rnd(-0.5, 0.5);
+            cr.alt = rnd(14, 24); cr.flyT = rnd(5, 9); cr.turn = 0; cr.turnT = 2; cr.stun = 0;
+            body.velocity.y = Math.max(body.velocity.y, 7);
+            const d = Math.hypot(dxp, dzp), vol = Math.max(0, 1 - d / 45);
+            sfx('playFlap', vol); sfx('playBirdCall', vol, 1.25);
+        }
+
+        function updateCreatures(dt) {
+            naturalSpawn(dt);
+            const t = performance.now() / 1000, pl = playerBody.position;
+            for (let i = creatures.length - 1; i >= 0; i--) {
+                const body = creatures[i], cr = body.userData.cr;
+                if (!physicsBodies.includes(body)) { creatures.splice(i, 1); continue; }
+                const v = body.velocity, p = body.position, bird = cr.type === 'bird';
+                const dxp = pl.x - p.x, dzp = pl.z - p.z, dist = Math.hypot(dxp, dzp);
+                cr.callCool -= dt;
+                const vol = Math.max(0, 1 - dist / 45);
+                const alarm = () => {
+                    if (cr.callCool > 0) return; cr.callCool = 1.2;
+                    if (bird) sfx('playBirdCall', vol, 1.3); else sfx('playGobble', vol, cr.voice);
+                };
+                const speedH = Math.hypot(v.x, v.z);
+                if (body.type !== CANNON.Body.DYNAMIC) { animCreature(cr, t, 0, 'idle', false, dxp, dzp); continue; }
+                const held = isGrabbing && grabGroup.some(m => m.body === body);
+                if (held) {
+                    cr.stun = 0.5; cr.last = { x: v.x, y: v.y, z: v.z }; alarm();
+                    animCreature(cr, t, 0, 'panic', true, dxp, dzp); continue;
+                }
+                body.quaternion.set(0, 0, 0, 1);
+                const ext = Math.hypot(v.x - cr.last.x, v.z - cr.last.z) + Math.max(0, v.y - cr.last.y - 5);   // something shoved us
+                if (ext > 3.5) { cr.stun = Math.min(2.5, 0.8 + ext * 0.04); alarm(); }
+                if (cr.stun > 0) {
+                    cr.stun -= dt; v.x *= Math.exp(-1.5 * dt); v.z *= Math.exp(-1.5 * dt); cr.last = { x: v.x, y: v.y, z: v.z };
+                    animCreature(cr, t, speedH, 'panic', true, dxp, dzp);
+                    if (cr.stun <= 0) {
+                        cr.t = rnd(0.5, 1.5);
+                        if (bird && p.y > 3) { cr.state = 'fly'; cr.fleeing = false; cr.alt = Math.max(p.y, 8); cr.flyT = rnd(5, 10); }
+                        else cr.state = 'idle';
+                    }
+                    continue;
+                }
+                let moving = false;
+                if (bird) {
+                    if (!(cr.state === 'fly' && cr.fleeing) && dist < (cr.state === 'fly' ? 6 : 9) && Math.abs(pl.y - p.y) < 14) startFlee(body, cr, dxp, dzp);
+                    cr.callT -= dt;
+                    if (cr.callT <= 0) { cr.callT = rnd(7, 16); if (dist < 40) sfx('playBirdCall', vol * 0.8, 0.8 + Math.random() * 0.5); }
+                    if (cr.state === 'fly') {
+                        cr.flyT -= dt; cr.turnT -= dt;
+                        if (cr.turnT <= 0) { cr.turnT = rnd(1.2, 3); cr.turn = rnd(-0.7, 0.7) * (cr.fleeing ? 0.3 : 1); }
+                        cr.heading += cr.turn * dt; steerCenter(cr, p, 68, dt);
+                        const sp = cr.fleeing ? 13 : cr.sp, k = 1 - Math.exp(-4 * dt);
+                        v.x += (-Math.sin(cr.heading) * sp - v.x) * k; v.z += (-Math.cos(cr.heading) * sp - v.z) * k;
+                        v.y = Math.max(-6, Math.min(8, (cr.alt - p.y) * 1.5));
+                        moving = true;
+                        if (cr.flyT <= 0) { cr.state = 'land'; cr.fleeing = false; cr.landT = 0; }
+                    } else if (cr.state === 'land') {
+                        cr.landT += dt; steerCenter(cr, p, 68, dt);
+                        const k = 1 - Math.exp(-3 * dt);
+                        v.x += (-Math.sin(cr.heading) * 3 - v.x) * k; v.z += (-Math.cos(cr.heading) * 3 - v.z) * k;
+                        moving = true;
+                        if (cr.landT > 0.4 && v.y > -1.5) { cr.state = 'idle'; cr.t = rnd(1, 2.5); }   // touched down (descent was blocked)
+                        else v.y = -4;
+                    } else wanderGround(body, cr, dt, p, v, dxp, dzp);
+                    moving = moving || cr.state === 'walk';
+                } else {
+                    cr.callT -= dt;
+                    if (cr.callT <= 0) { cr.callT = rnd(8, 16); if (dist < 40) sfx('playGobble', vol, cr.voice); }
+                    if (dist < cr.followR) {   // follow the player, then stand and stare
+                        cr.state = 'follow';
+                        cr.heading = Math.atan2(-dxp, -dzp);
+                        const k = 1 - Math.exp(-6 * dt), sp = dist > 2.8 ? 3.5 : 0;
+                        v.x += (-Math.sin(cr.heading) * sp - v.x) * k; v.z += (-Math.cos(cr.heading) * sp - v.z) * k;
+                        moving = sp > 0;
+                    } else { if (cr.state === 'follow') { cr.state = 'idle'; cr.t = rnd(1, 2); } wanderGround(body, cr, dt, p, v, dxp, dzp); moving = cr.state === 'walk'; }
+                }
+                cr.last = { x: v.x, y: v.y, z: v.z };
+                animCreature(cr, t, Math.hypot(v.x, v.z), cr.state, false, dxp, dzp, moving);
+            }
+        }
+        function wanderGround(body, cr, dt, p, v, dxp, dzp) {
+            const bird = cr.type === 'bird';
+            cr.t -= dt;
+            if (cr.state === 'idle') {
+                const k = 1 - Math.exp(-8 * dt); v.x -= v.x * k; v.z -= v.z * k;
+                if (bird && cr.t < 0) cr.peck = false;
+            } else {
+                steerCenter(cr, p, 68, dt);
+                const k = 1 - Math.exp(-6 * dt);
+                v.x += (-Math.sin(cr.heading) * cr.spd - v.x) * k; v.z += (-Math.cos(cr.heading) * cr.spd - v.z) * k;
+            }
+            if (cr.t > 0) return;
+            const r = Math.random();
+            if (r < 0.45) { cr.state = 'walk'; cr.t = rnd(1, 3); cr.heading = rnd(0, 6.28); cr.spd = bird ? rnd(1, 2.2) : rnd(0.8, 1.5); cr.peck = false; }
+            else if (r < 0.8 || !bird) { cr.state = 'idle'; cr.t = rnd(1, 3); cr.peck = bird && Math.random() < 0.7; }
+            else {   // take off and fly around
+                cr.state = 'fly'; cr.fleeing = false; cr.alt = rnd(8, 18); cr.flyT = rnd(6, 12); cr.sp = rnd(7, 10); cr.turn = 0; cr.turnT = 1;
+                v.y = 6; const d = Math.hypot(dxp, dzp); sfx('playFlap', Math.max(0, 1 - d / 45) * 0.6);
+            }
+        }
+        function animCreature(cr, t, speedH, state, panic, dxp, dzp, moving) {
+            const P = cr.parts, vis = P.vis;
+            cr.vh += angDiff(cr.vh, cr.heading) * 0.2;
+            vis.rotation.y = cr.vh;
+            const ph = t + cr.phase;
+            if (cr.type === 'bird') {
+                const fly = state === 'fly' || state === 'land';
+                const fl = panic ? 26 : fly ? (cr.fleeing ? 22 : state === 'land' ? 10 : 15) : 0;
+                const a = fl ? Math.sin(ph * fl) * 1.0 : 0.12;
+                P.wingL.rotation.z = -a; P.wingR.rotation.z = a;
+                if (fly || panic) { P.legL.rotation.x = P.legR.rotation.x = -1.0; }
+                else { const sw = Math.sin(ph * 10) * 0.6 * Math.min(1.3, speedH / 1.5); P.legL.rotation.x = sw; P.legR.rotation.x = -sw; }
+                P.head.rotation.x = cr.peck && state === 'idle' ? 0.9 * Math.max(0, Math.sin(ph * 9)) : (moving && !fly ? Math.sin(ph * 10) * 0.06 : 0);
+                vis.rotation.x = fly ? -0.2 : 0;
+                vis.position.y = -cr.r + (moving && !fly ? Math.abs(Math.sin(ph * 10)) * 0.03 * cr.s : 0);
+            } else {
+                const dtA = cr.lastT ? Math.min(0.1, t - cr.lastT) : 0.016; cr.lastT = t;
+                cr.wp = (cr.wp || 0) + dtA * (panic ? 14 : 3 + speedH * 1.6);
+                if (t > (cr.nextBlink || 0)) { cr.nextBlink = t + rnd(2.5, 5); cr.blinkEnd = t + 0.13; }
+                const bf = t < (cr.blinkEnd || 0) ? 0.1 : 1;
+                P.eyeMeshes.forEach(e => { e.m.scale.y = e.sy * bf; });
+                const sw = Math.sin(cr.wp) * (panic ? 1.0 : 0.6) * (panic ? 1 : Math.min(1, speedH / 2.5));
+                P.legL.rotation.x = sw; P.legR.rotation.x = -sw;
+                vis.rotation.z = (moving || panic) ? Math.sin(cr.wp) * (panic ? 0.3 : 0.07) : 0;
+                vis.position.y = -cr.r + (moving ? Math.abs(Math.sin(cr.wp)) * 0.06 * cr.s : 0);
+                const c = Math.cos(cr.vh), sn = Math.sin(cr.vh), L = Math.hypot(dxp, dzp) || 1;
+                const lx = (dxp * c - dzp * sn) / L, lz = (dxp * sn + dzp * c) / L;   // direction to the player in the model's space
+                P.eyes.forEach(e => { e.iris.position.x = e.ix + lx * 0.01; e.pupil.position.x = e.px + lx * 0.012; e.iris.position.y = e.iy + lz * 0.01; e.pupil.position.y = e.py + lz * 0.012; });
+            }
         }
 
         function armFuse(body) {
@@ -1992,7 +2445,13 @@ let lastImpactAny = 0;
             updateWormTendril(handPos, attach, dt);
 
             // Anchored assemblies never move, even when grabbed
-            if (getAssembly(g).some(b => activeAnchors.has(b))) return;
+            if (getAssembly(g).some(b => activeAnchors.has(b))) {
+                if (grapplePull) {   // anchored items work as grapple points too
+                    const pull = attach.clone().sub(handPos).multiplyScalar(6);
+                    playerBody.velocity.x += pull.x * 0.02; playerBody.velocity.y += pull.y * 0.02; playerBody.velocity.z += pull.z * 0.02;
+                }
+                return;
+            }
 
             const target = camera.position.clone().addScaledVector(dir, grabDistance);
             if (target.y < 0.4) target.y = 0.4;
@@ -2033,6 +2492,7 @@ let lastImpactAny = 0;
             let speed = walkSpeed;
             if (isSprinting) speed = sprintSpeed;
             if (isCrouching) speed = crouchSpeed;
+            speed *= speedMul;
 
             const active = gameStarted;
             const input = new THREE.Vector3(0, 0, 0);
@@ -2047,7 +2507,8 @@ let lastImpactAny = 0;
             const moveDir = input.applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraRotation.y);
             const v = playerBody.velocity;
 
-            const onGround = grounded && !(grapplePull && isStaticGrab);
+            const pulling = grapplePull && isGrabbing && (isStaticGrab || (grabbedBody && grabbedBody.type === CANNON.Body.STATIC));
+            const onGround = grounded && !pulling;
             if (onGround && !hasInput && !groundVel && groundNY < 0.95) {
                 v.x = 0; v.z = 0; if (v.y < 0) v.y = 0;   // stand still on slopes instead of sliding
             } else if (onGround) {
