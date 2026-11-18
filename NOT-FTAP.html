@@ -185,7 +185,7 @@
             <details class="tab"><summary><i class="fa-solid fa-star"></i><span>Default</span><em>4</em></summary><div class="tabc">
             <button onclick="spawnObject('spinwheel'); this.blur()" class="item">
                 <div class="tile" style="background:#bae6fd"><i class="fa-solid fa-gear"></i></div>
-                <div><div class="t">Wheel</div><div class="d">Spins freely · chain to the yellow block</div></div>
+                <div><div class="t">Wheel</div><div class="d">Spins freely</div></div>
             </button>
             <button onclick="spawnObject('pallet'); this.blur()" class="item">
                 <div class="tile" style="background:#f3b36b"><i class="fa-solid fa-pallet"></i></div>
@@ -3024,7 +3024,7 @@ const PERS = {
             sfx('playModeToggle', on); showToast(on ? 'Glass' : 'Solid');
         }
 
-        function createSpinWheel(pos) {   // base post + free-spinning wheel (old wheel size) with a small grey block to chain / clip things to
+        function createSpinWheel(pos) {   // base post + free-spinning wheel (old wheel size)
             const yaw = cameraRotation.y + Math.PI, Y = new THREE.Vector3(0, 1, 0);
             const off = new THREE.Vector3(0, 0, -0.65).applyAxisAngle(Y, yaw);
             const mk = (mass, x, y, z) => { const b = new CANNON.Body({ mass, material: defaultMaterial, angularDamping: 0.05 }); b.position.set(x, y, z); b.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), yaw); return b; };
@@ -3032,14 +3032,12 @@ const PERS = {
             base.addShape(new CANNON.Box(new CANNON.Vec3(0.3, 0.8, 0.25)));
             const tire = new THREE.CylinderGeometry(0.8, 0.8, 0.6, 20).rotateX(Math.PI / 2);
             wheel.addShape(convexFromGeos([tire]));
-            wheel.addShape(new CANNON.Box(new CANNON.Vec3(0.17, 0.17, 0.17)), new CANNON.Vec3(0.3, 0, -0.46));
             const bm = new THREE.Group(), wm = new THREE.Group();
             const add = (g, geo, color, x, y, z, keep) => { const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.6 })); m.position.set(x, y, z); m.castShadow = true; m.userData.keepColor = !!keep; g.add(m); };
             add(bm, new THREE.BoxGeometry(0.6, 1.6, 0.5), 0x475569, 0, 0, 0);
             add(bm, new THREE.CylinderGeometry(0.08, 0.08, 0.4, 10).rotateX(Math.PI / 2), 0x334155, 0, 0, -0.35, true);
             add(wm, tire, 0x1b2733, 0, 0, 0);
             add(wm, new THREE.CylinderGeometry(0.28, 0.28, 0.66, 14).rotateX(Math.PI / 2), 0x475569, 0, 0, 0, true);
-            add(wm, new THREE.BoxGeometry(0.34, 0.34, 0.34), 0x808080, 0.3, 0, -0.46, true);
             const parts = [base, wheel];
             [[base, bm, 'Wheel base'], [wheel, wm, 'Wheel']].forEach(([b, m, name]) => {
                 m.userData = { body: b, name }; b.userData = { isSpawnedObject: true, mesh: m, allParts: parts, shapeKey: 'spinwheel' };
