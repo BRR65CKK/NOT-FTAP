@@ -252,6 +252,22 @@
                 <button onclick="spawnObject('plank'); this.blur()" class="chip"><span class="mini" style="background:#d97706"><i class="fa-solid fa-ruler-horizontal"></i></span>Plank</button>
             </div>
             </div></details>
+            <details class="tab"><summary><i class="fa-solid fa-burst"></i><span>Breakables</span><em>12</em></summary><div class="tabc">
+            <div class="shapes">
+                <button onclick="spawnObject('pot'); this.blur()" class="chip" title="Fragile · ceramic"><span class="mini" style="background:#c2703d"><i class="fa-solid fa-jar"></i></span>Pot</button>
+                <button onclick="spawnObject('crate'); this.blur()" class="chip" title="Sturdy · wood"><span class="mini" style="background:#b98a52"><i class="fa-solid fa-box-archive"></i></span>Crate</button>
+                <button onclick="spawnObject('balloon'); this.blur()" class="chip" title="Pops on touch · floats"><span class="mini" style="background:#ef4444"><i class="fa-solid fa-circle"></i></span>Balloon</button>
+                <button onclick="spawnObject('bottle'); this.blur()" class="chip" title="Very fragile · glass"><span class="mini" style="background:#4ade80"><i class="fa-solid fa-wine-bottle"></i></span>Bottle</button>
+                <button onclick="spawnObject('bulb'); this.blur()" class="chip" title="Very fragile · glass"><span class="mini" style="background:#facc15"><i class="fa-solid fa-lightbulb"></i></span>Light bulb</button>
+                <button onclick="spawnObject('egg'); this.blur()" class="chip" title="Very fragile · splats"><span class="mini" style="background:#f5ecd6"><i class="fa-solid fa-egg"></i></span>Egg</button>
+                <button onclick="spawnObject('barrel'); this.blur()" class="chip" title="Sturdy · wood"><span class="mini" style="background:#8b5a2b"><i class="fa-solid fa-drum"></i></span>Barrel</button>
+                <button onclick="spawnObject('watermelon'); this.blur()" class="chip" title="Medium · splats"><span class="mini" style="background:#2f8f3f"><i class="fa-solid fa-lemon"></i></span>Watermelon</button>
+                <button onclick="spawnObject('pumpkin'); this.blur()" class="chip" title="Medium-hard · splats"><span class="mini" style="background:#f97316"><i class="fa-solid fa-leaf"></i></span>Pumpkin</button>
+                <button onclick="spawnObject('cardboard'); this.blur()" class="chip" title="Fragile · tears"><span class="mini" style="background:#c9a36b"><i class="fa-solid fa-box"></i></span>Cardboard box</button>
+                <button onclick="spawnObject('ice'); this.blur()" class="chip" title="Medium · shatters"><span class="mini" style="background:#9bdcf5"><i class="fa-solid fa-icicles"></i></span>Ice block</button>
+                <button onclick="spawnObject('pinata'); this.blur()" class="chip" title="Fragile · candy burst"><span class="mini" style="background:#f472b6"><i class="fa-solid fa-gift"></i></span>Piñata</button>
+            </div>
+            </div></details>
         </div>
         <div id="scenery-panel"></div>
         <div id="settings-panel">
@@ -266,6 +282,7 @@
                 <label class="vol"><span>Dummies</span><input id="kr-dummy" type="range" min="0" max="300" oninput="setKill('dummy', this.value)"><b id="kv-dummy"></b></label>
                 <label class="vol"><span>Live dummies</span><input id="kr-live" type="range" min="0" max="300" oninput="setKill('live', this.value)"><b id="kv-live"></b></label>
                 <label class="vol"><span>Cats</span><input id="kr-cat" type="range" min="0" max="300" oninput="setKill('cat', this.value)"><b id="kv-cat"></b></label>
+                <label class="vol"><span>Breakables</span><input id="kr-brk" type="range" min="0" max="300" oninput="setKill('brk', this.value)"><b id="kv-brk"></b></label>
             </div></details>
             <div class="sec">Gameplay</div>
             <label class="vol"><span>Tendril strength</span><input id="range-tend" type="range" min="25" max="200" oninput="setTend(this.value)"><b id="vol-tend"></b></label>
@@ -436,6 +453,17 @@ setNoise(level, freq) {   // rain / wind / rumble
             }
 playThunder(vol = 1) { if (!this.init()) return; this.burst(1.8, 700, 50, 0.8 * vol); this.blip('sine', 60, 25, 1.4, 0.5 * vol); }
 playHiss(vol = 1) { if (!this.init() || vol < 0.04) return; this.burst(0.5, 7000, 3000, 0.4 * vol, 0, 'bandpass'); }
+playBreak(mat = 'ceramic', vol = 1) {
+                if (!this.init() || vol < 0.04) return;
+                const v = vol;
+                if (mat === 'pop') { this.burst(0.08, 4500, 1500, 0.55 * v); this.blip('triangle', 900, 200, 0.08, 0.3 * v); return; }
+                if (mat === 'glass' || mat === 'ice') { this.burst(0.4, 6000, 1800, 0.4 * v, 0, 'bandpass'); for (let i = 0; i < 6; i++) this.blip('sine', rnd(2800, 6500), rnd(1800, 4000), 0.06, 0.12 * v, i * 0.045 + Math.random() * 0.03); return; }
+                if (mat === 'wood') { this.burst(0.3, 1600, 250, 0.5 * v); this.blip('square', 220, 70, 0.14, 0.25 * v); this.blip('square', 160, 60, 0.12, 0.18 * v, 0.07); return; }
+                if (mat === 'paper') { this.burst(0.3, 2600, 900, 0.3 * v, 0, 'bandpass'); return; }
+                if (mat === 'fruit' || mat === 'egg') { this.burst(0.3, 900, 200, 0.5 * v); this.blip('sine', 300, 90, 0.18, 0.3 * v); return; }
+                if (mat === 'candy') { this.burst(0.1, 4000, 1200, 0.3 * v); for (let i = 0; i < 6; i++) this.blip('triangle', rnd(900, 2200), rnd(1200, 2600), 0.07, 0.12 * v, i * 0.05); return; }
+                this.burst(0.28, 3200, 700, 0.45 * v); this.blip('sine', 1800, 500, 0.1, 0.2 * v); this.blip('sine', 1300, 400, 0.1, 0.15 * v, 0.05);   // ceramic
+            }
             playSpawn() { if (!this.init()) return; this.blip('sine', 280, 720, 0.12, 0.2); this.blip('triangle', 560, 1100, 0.09, 0.1, 0.05); }
             playGrapple(on) {
                 if (!this.init()) return;
@@ -554,7 +582,7 @@ playHiss(vol = 1) { if (!this.init() || vol < 0.04) return; this.burst(0.5, 7000
         let isSprinting = false, isCrouching = false;
         let canJump = true;
         let walkSpeed = 14.0, sprintSpeed = 26.0, crouchSpeed = 7.0;
-        const kill = { bird: 1, drum: 1, dummy: 1, live: 1, cat: 1 };
+        const kill = { bird: 1, drum: 1, dummy: 1, live: 1, cat: 1, brk: 1 };
         let jDown = false, jOpened = false, jTimer = null, pmOpen = false, pmSel = 0, xHeld = false, tendStr = 1, showBlood = true, selfBlast = true, birdSpawns = true, speedMul = 1, showHints = true, lmbHeld = false, qTimer = null, qLong = false, hoverBody = null, hoverEnv = false;
         try { const pr = JSON.parse(localStorage.getItem('ftapPrefs') || '{}'); if (pr.speed) speedMul = pr.speed; if (pr.hints === false) showHints = false; if (pr.birds === false) birdSpawns = false; if (pr.blood === false) showBlood = false; if (pr.selfBlast === false) selfBlast = false; if (pr.tend) tendStr = pr.tend; if (pr.kill) Object.assign(kill, pr.kill); } catch (e) {}
 
@@ -1034,7 +1062,7 @@ const scn = { season: 'summer', time: 'afternoon', weather: 'partly', event: 'no
             world.gravity.set(0, -60.0, 0);
             world.broadphase = new CANNON.NaiveBroadphase();
             world.solver.iterations = 20;
-            world.addEventListener('preStep', () => driveGrabbed(1 / 60));
+            world.addEventListener('preStep', () => { driveGrabbed(1 / 60); floatBalloons(); });
             {   // every dynamic body reports impacts so we can play a hit sound
                 const addBody = world.addBody.bind(world);
                 world.addBody = b => { addBody(b); if (b.mass > 0) b.addEventListener('collide', onItemImpact); };
@@ -1798,6 +1826,7 @@ function setKill(k, v) { kill[k] = v / 100; document.getElementById('kv-' + k).t
 
         // Sizes: cube-like shapes fit in the cube (S), round ones fit in the ball (R)
         const S = 1.2, R = 0.8, PAL_T = 0.35;
+        const BRK = (thr, blast, mat, shard, n, extra) => Object.assign({ thr, blast, mat, shard, n }, extra || {});   // thr = impact speed that breaks it, blast = explosion strength that breaks it
         const SHAPES = {
             cone: () => ({ color: 0xf97316, mass: 8, parts: [{ geo: new THREE.ConeGeometry(R, S, 12) }] }),
             pyramid: () => ({ color: 0xeab308, mass: 8, flat: true, parts: [{ geo: new THREE.ConeGeometry(S / Math.SQRT2, S, 4).rotateY(Math.PI / 4) }] }),
@@ -1830,6 +1859,47 @@ function setKill(k, v) { kill[k] = v / 100; document.getElementById('kv-' + k).t
                 { geo: new THREE.ConeGeometry(0.24, 0.5, 10).rotateZ(-Math.PI / 2).translate(0.85, 0.24, 0) }],
                 boxes: [{ half: [0.5, 0.11, 0.35], off: [0, -0.39, 0] }, { half: [0.25, 0.19, 0.21], off: [0, -0.09, 0] },
                     { half: [0.6, 0.14, 0.31], off: [0, 0.24, 0] }, { half: [0.22, 0.12, 0.2], off: [0.82, 0.22, 0] }] }),
+            pot: () => ({ color: 0xc2703d, mass: 4, brk: BRK(15, 0.15, 'ceramic', [0xc2703d, 0xa85a2d, 0x8a4a22], 12), parts: [
+                { geo: new THREE.CylinderGeometry(0.5, 0.35, 0.8, 14) },
+                { geo: new THREE.CylinderGeometry(0.56, 0.56, 0.14, 14).translate(0, 0.42, 0), hull: false },
+                { geo: new THREE.CylinderGeometry(0.46, 0.46, 0.04, 14).translate(0, 0.44, 0), color: 0x4a3322, hull: false, keep: true },
+                { geo: new THREE.ConeGeometry(0.1, 0.45, 6).translate(-0.12, 0.68, 0), color: 0x22c55e, hull: false, keep: true },
+                { geo: new THREE.ConeGeometry(0.1, 0.5, 6).translate(0.1, 0.7, 0.05), color: 0x16a34a, hull: false, keep: true }] }),
+            crate: () => ({ color: 0xb98a52, mass: 10, brk: BRK(34, 0.45, 'wood', [0xb98a52, 0x7a5428, 0x9c6f3e], 14), parts: [
+                { geo: new THREE.BoxGeometry(1.8, 1.8, 1.8) },
+                { geo: new THREE.BoxGeometry(1.84, 0.14, 1.84).translate(0, 0.78, 0), color: 0x7a5428, keep: true },
+                { geo: new THREE.BoxGeometry(1.84, 0.14, 1.84).translate(0, -0.78, 0), color: 0x7a5428, keep: true },
+                { geo: new THREE.BoxGeometry(1.84, 0.14, 1.84), color: 0x7a5428, keep: true }], boxes: [{ half: [0.9, 0.9, 0.9], off: [0, 0, 0] }] }),
+            barrel: () => ({ color: 0x8b5a2b, mass: 12, brk: BRK(40, 0.55, 'wood', [0x8b5a2b, 0x6b4423, 0x374151], 14), parts: [
+                { geo: new THREE.CylinderGeometry(0.6, 0.6, 1.4, 14) },
+                { geo: new THREE.CylinderGeometry(0.63, 0.63, 0.1, 14).translate(0, 0.45, 0), color: 0x374151, hull: false, keep: true },
+                { geo: new THREE.CylinderGeometry(0.63, 0.63, 0.1, 14).translate(0, -0.45, 0), color: 0x374151, hull: false, keep: true }] }),
+            balloon: () => { const c = pickOf([0xef4444, 0x3b82f6, 0xfacc15, 0x22c55e, 0xec4899, 0xa855f7, 0xf97316]); return { color: c, mass: 0.12, float: true, brk: BRK(2.5, 0.03, 'pop', [c], 8, { pop: true }), parts: [
+                { geo: new THREE.SphereGeometry(0.45, 14, 10).scale(1, 1.2, 1), hullGeo: new THREE.SphereGeometry(0.45, 8, 6).scale(1, 1.2, 1) },
+                { geo: new THREE.ConeGeometry(0.06, 0.12, 6).translate(0, -0.58, 0), keep: true, hull: false },
+                { geo: new THREE.CylinderGeometry(0.01, 0.01, 1.2, 4).translate(0, -1.2, 0), color: 0xe5e7eb, keep: true, hull: false }] }; },
+            bottle: () => ({ color: 0x4ade80, mass: 0.6, brk: BRK(8, 0.08, 'glass', [0x86efac, 0xbbf7d0, 0x4ade80], 12, { glass: true }), parts: [
+                { geo: new THREE.CylinderGeometry(0.18, 0.18, 0.7, 12), alpha: 0.65 },
+                { geo: new THREE.CylinderGeometry(0.07, 0.07, 0.3, 10).translate(0, 0.5, 0), alpha: 0.65, hull: false },
+                { geo: new THREE.BoxGeometry(0.12, 0.06, 0.12).translate(0, 0.68, 0), color: 0xfacc15, hull: false, keep: true }] }),
+            bulb: () => ({ color: 0xf8fafc, mass: 0.3, brk: BRK(5, 0.05, 'glass', [0xf8fafc, 0xe0f2fe], 10, { glass: true }), parts: [
+                { geo: new THREE.SphereGeometry(0.22, 12, 8), hullGeo: new THREE.SphereGeometry(0.22, 8, 6), alpha: 0.8 },
+                { geo: new THREE.CylinderGeometry(0.09, 0.09, 0.2, 8).translate(0, -0.3, 0), color: 0x9ca3af, hull: false, keep: true },
+                { geo: new THREE.SphereGeometry(0.05, 6, 6), color: 0xfacc15, hull: false, keep: true }] }),
+            egg: () => ({ color: 0xf5ecd6, mass: 0.15, brk: BRK(5.5, 0.05, 'egg', [0xf5ecd6, 0xe7dcc0, 0xfacc15], 8, { splat: 0xf2c94c }), parts: [
+                { geo: new THREE.SphereGeometry(0.18, 12, 10).scale(0.85, 1.15, 0.85), hullGeo: new THREE.SphereGeometry(0.18, 8, 6).scale(0.85, 1.15, 0.85) }] }),
+            watermelon: () => ({ color: 0x2f8f3f, mass: 4, brk: BRK(20, 0.2, 'fruit', [0xef4444, 0x2f8f3f, 0xfca5a5], 14, { splat: 0xdc2626 }), parts: [
+                { geo: new THREE.SphereGeometry(0.5, 14, 10), hullGeo: new THREE.SphereGeometry(0.5, 10, 6) }] }),
+            pumpkin: () => ({ color: 0xf97316, mass: 3, brk: BRK(24, 0.25, 'fruit', [0xf97316, 0xea580c, 0xfbbf24], 12, { splat: 0xea580c }), parts: [
+                { geo: new THREE.SphereGeometry(0.5, 14, 10).scale(1.1, 0.85, 1.1), hullGeo: new THREE.SphereGeometry(0.5, 10, 6).scale(1.1, 0.85, 1.1) },
+                { geo: new THREE.BoxGeometry(0.1, 0.16, 0.1).translate(0, 0.45, 0), color: 0x166534, hull: false, keep: true }] }),
+            cardboard: () => ({ color: 0xc9a36b, mass: 1.2, brk: BRK(12, 0.12, 'paper', [0xc9a36b, 0xb08850, 0xe7d3a8], 10), parts: [
+                { geo: new THREE.BoxGeometry(1, 0.8, 1) }, { geo: new THREE.BoxGeometry(0.2, 0.02, 1.02).translate(0, 0.4, 0), color: 0x9a7b4a, keep: true }], boxes: [{ half: [0.5, 0.4, 0.5], off: [0, 0, 0] }] }),
+            ice: () => ({ color: 0x9bdcf5, mass: 8, brk: BRK(18, 0.2, 'ice', [0xbfe9fb, 0x9bdcf5, 0xe0f7ff], 14, { glass: true }), parts: [{ geo: new THREE.BoxGeometry(1, 1, 1), alpha: 0.7 }], boxes: [{ half: [0.5, 0.5, 0.5], off: [0, 0, 0] }] }),
+            pinata: () => ({ color: 0xf472b6, mass: 1.2, brk: BRK(12, 0.12, 'candy', [0xf472b6, 0xfacc15, 0x38bdf8, 0x22c55e, 0xef4444, 0xa855f7], 24, { sz: 0.08 }), parts: [
+                { geo: new THREE.SphereGeometry(0.5, 14, 10), hullGeo: new THREE.SphereGeometry(0.5, 10, 6) },
+                { geo: new THREE.CylinderGeometry(0.52, 0.52, 0.06, 14).translate(0, 0.15, 0), color: 0xfacc15, hull: false, keep: true },
+                { geo: new THREE.CylinderGeometry(0.5, 0.5, 0.06, 14).translate(0, -0.15, 0), color: 0x38bdf8, hull: false, keep: true }] }),
             plank: () => ({ color: 0xd97706, mass: 10, parts: [{ geo: new THREE.BoxGeometry(4.8, 0.2, S / 2) }], boxes: [{ half: [2.4, 0.1, S / 4], off: [0, 0, 0] }] }),  // lying flat: pallet-length (4.8), 0.6 wide, 0.2 thin
             stairs: () => {
                 const parts = [], boxes = [], n = 4, st = S / n;
@@ -1855,14 +1925,14 @@ function setKill(k, v) { kill[k] = v / 100; document.getElementById('kv-' + k).t
                 return { color: 0xa78bfa, mass: 150, parts, boxes };
             }
         };
-        const SHAPE_NAMES = { anvil: 'Anvil', bazooka: 'Bazooka', windgun: 'Wind Gun', box: 'Box', explosive: 'Explosive', cone: 'Cone', pyramid: 'Pyramid', cylinder: 'Cylinder', disk: 'Disk', spinwheel: 'Wheel', ramp: 'Ramp', stairs: 'Stairs', semicircle: 'Semicircle', dome: 'Dome', prism: 'Prism', plank: 'Plank' };
+        const SHAPE_NAMES = { pot: 'Pot', crate: 'Crate', barrel: 'Barrel', balloon: 'Balloon', bottle: 'Bottle', bulb: 'Light bulb', egg: 'Egg', watermelon: 'Watermelon', pumpkin: 'Pumpkin', cardboard: 'Cardboard box', ice: 'Ice block', pinata: 'Piñata', anvil: 'Anvil', bazooka: 'Bazooka', windgun: 'Wind Gun', box: 'Box', explosive: 'Explosive', cone: 'Cone', pyramid: 'Pyramid', cylinder: 'Cylinder', disk: 'Disk', spinwheel: 'Wheel', ramp: 'Ramp', stairs: 'Stairs', semicircle: 'Semicircle', dome: 'Dome', prism: 'Prism', plank: 'Plank' };
 
         function createShape(key, pos) {
             const d = SHAPES[key](), root = new THREE.Group();
             const body = new CANNON.Body({ mass: d.mass, material: defaultMaterial });
             const hull = [];
             d.parts.forEach(pt => {
-                const m = new THREE.Mesh(pt.geo, new THREE.MeshStandardMaterial({ color: pt.color || d.color, roughness: 0.55, flatShading: !!d.flat, side: pt.double ? THREE.DoubleSide : THREE.FrontSide }));
+                const m = new THREE.Mesh(pt.geo, new THREE.MeshStandardMaterial({ color: pt.color || d.color, roughness: 0.55, flatShading: !!d.flat, side: pt.double ? THREE.DoubleSide : THREE.FrontSide, transparent: pt.alpha !== undefined, opacity: pt.alpha === undefined ? 1 : pt.alpha, depthWrite: pt.alpha === undefined }));
                 m.castShadow = true; m.receiveShadow = true; m.userData.keepColor = !!pt.keep; m.userData.isButton = !!pt.button;
                 root.add(m);
                 if (pt.hull !== false) hull.push(pt.hullGeo || pt.geo);
@@ -1876,6 +1946,11 @@ function setKill(k, v) { kill[k] = v / 100; document.getElementById('kv-' + k).t
             world.addBody(body);
             body.userData.mesh = root;
             body.userData.shapeKey = key;
+            if (d.brk) {   // breakable: shatters / pops on a hard hit or an explosion
+                body.userData.brk = Object.assign({ armedAt: performance.now() + 600 }, d.brk);
+                body.addEventListener('collide', e => brkImpact(body, e));
+                if (d.float) { floaters.push(body); body.linearDamping = 0.8; }
+            }
             if (d.holdable) {   // barrel points the way you were facing
                 body.userData.holdable = true; body.userData.shapeKey = key;
                 if (d.windgun) body.userData.windgun = true;
@@ -3110,6 +3185,8 @@ const PERS = {
             if (cr.type === 'livedummy') sfx('playScream', vol, cr.voice, 1); else sfx('playMeow', vol, cr.voice, true);
         }
         function blastHurt(b, f, power) {   // f = 0..1, bigger the closer to the centre
+            const bk = b.userData.brk;
+            if (bk && !bk.broken && kill.brk > 0 && f * power * kill.brk >= bk.blast) { breakItem(b); return; }
             const ap = b.userData.allParts, mn = b.userData.mesh && b.userData.mesh.userData.name;
             if (ap && mn && /^Dummy/.test(mn) && b === ap[0] && kill.dummy > 0 && f * power * kill.dummy > 0.12) {   // plain dummy: may lose limbs (never guaranteed), voice gets small and weak
                 const head = ap.find(p => /Head/.test(p.userData.mesh.userData.name)), pl = Math.min(0.7, f * power * kill.dummy * 0.9);
@@ -3148,6 +3225,62 @@ const PERS = {
             if (ev >= cr.killV) { cr.dead = 'impact'; cr.eyesClosed = true; if (cr.type !== 'drumstick') bleed(body, 6); }
             else if (ev >= cr.koV) { cr.paralyzed = Math.max(cr.paralyzed || 0, rnd(5, 12)); cr.ragNext = bip; if (cr.type !== 'drumstick') bleed(body, 2); }   // unconscious for a while
             else if (bip && ev >= cr.ragV) cr.stun = Math.max(cr.stun, 1.5);   // just ragdolls
+        }
+
+        const floaters = [], brkQueue = [];
+        let shardFx = 0;
+        function splat(x, z, color) {
+            if (bloodFx > 160) return; bloodFx++;
+            const m = new THREE.Mesh(CIRC_GEO, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+            m.rotation.x = -Math.PI / 2; m.position.set(x, 0.03, z); m.scale.setScalar(rnd(0.3, 0.6)); scene.add(m);
+            addFX(20, k => { m.material.opacity = 0.8 * (1 - k); }, () => { scene.remove(m); m.material.dispose(); bloodFx--; });
+        }
+        function popKnock(pos) {   // small shove when a balloon pops
+            const R = 3;
+            physicsBodies.forEach(b => {
+                if (b.type !== CANNON.Body.DYNAMIC) return;
+                const d = bp(b).sub(pos), dist = d.length(); if (dist > R) return;
+                const f = 1 - dist / R; d.y += 0.3; d.normalize();
+                const dv = 8 * f * Math.min(1.5, Math.sqrt(12 / Math.max(b.mass, 3)));
+                b.velocity.x += d.x * dv; b.velocity.y += d.y * dv; b.velocity.z += d.z * dv; b.wakeUp();
+            });
+            const pd = bp(playerBody).sub(pos), pdist = pd.length();
+            if (pdist < R && selfBlast) { const f = 1 - pdist / R; pd.y += 0.3; pd.normalize(); playerBody.velocity.x += pd.x * 6 * f; playerBody.velocity.y += pd.y * 6 * f; playerBody.velocity.z += pd.z * 6 * f; }
+        }
+        function breakItem(body) {
+            const u = body.userData.brk;
+            if (!u || u.broken) return;
+            u.broken = true;
+            const pos = bp(body), bv = body.velocity, vol = Math.max(0.15, 1 - pos.distanceTo(bp(playerBody)) / 60);
+            for (let i = 0; i < u.n && shardFx < 220; i++) {
+                shardFx++;
+                const sz = (u.sz || 0.13) * rnd(0.5, 1.3), m = new THREE.Mesh(BOX1, new THREE.MeshStandardMaterial({ color: pickOf(u.shard), roughness: 0.6, transparent: !!u.glass, opacity: u.glass ? 0.7 : 1 }));
+                m.scale.set(sz, sz * rnd(0.5, 1.4), sz * rnd(0.6, 1.3)); m.position.copy(pos).add(new THREE.Vector3(rnd(-0.2, 0.2), rnd(-0.1, 0.3), rnd(-0.2, 0.2))); scene.add(m);
+                const v = new THREE.Vector3(bv.x * 0.4 + rnd(-5, 5), rnd(2, 7), bv.z * 0.4 + rnd(-5, 5)), sp = new THREE.Vector3(rnd(-6, 6), rnd(-6, 6), rnd(-6, 6)), life = rnd(1.2, 2.2);
+                addFX(life, (k, dt) => { v.y -= 30 * dt; m.position.addScaledVector(v, dt); if (m.position.y < 0.05) { m.position.y = 0.05; v.multiplyScalar(0.3); sp.multiplyScalar(0.3); } m.rotation.x += sp.x * dt; m.rotation.y += sp.y * dt; if (k > 0.7) m.scale.multiplyScalar(0.96); },
+                    () => { scene.remove(m); m.material.dispose(); shardFx--; });
+            }
+            if (u.splat) splat(pos.x, pos.z, u.splat);
+            if (u.pop) popKnock(pos);
+            sfx('playBreak', u.mat, vol);
+            if (body === grabbedBody) releaseGrab();
+            removeBody(body);
+        }
+        function brkImpact(body, e) {   // hard hits break it; very fragile things even break when you walk into them
+            const u = body.userData.brk;
+            if (!u || u.broken || kill.brk <= 0 || performance.now() < u.armedAt) return;
+            const o = e.body, v = Math.abs(e.contact.getImpactVelocityAlongNormal());
+            const m = o === playerBody ? 1 : (o.mass > 0 ? Math.max(0.7, Math.min(3, Math.sqrt(o.mass / 10))) : 1);
+            if (v * m * kill.brk >= u.thr) brkQueue.push(body);
+        }
+        function floatBalloons() {   // balloons drift upward and pop way up high
+            for (let i = floaters.length - 1; i >= 0; i--) {
+                const b = floaters[i];
+                if (!physicsBodies.includes(b)) { floaters.splice(i, 1); continue; }
+                if (b.type !== CANNON.Body.DYNAMIC) continue;
+                b.force.y += b.mass * 60 * 1.1;
+                if (b.position.y > 140) brkQueue.push(b);
+            }
         }
 
         function armFuse(body) {
@@ -3580,6 +3713,7 @@ const PERS = {
             stabilizeGlue();
             antiTunnel();
             while (boomQueue.length) detonate(boomQueue.pop());
+            while (brkQueue.length) breakItem(brkQueue.pop());
 
             // Anything that falls into the ocean is deleted
             for (let i = physicsBodies.length - 1; i >= 0; i--) {
